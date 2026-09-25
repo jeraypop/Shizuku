@@ -5,10 +5,14 @@ jdk:
 
 # Toolchain: Gradle 9.5.1 (wrapper) + AGP 9.2.1, both require JDK 17+, hence openjdk21.
 #
-# No before_install step: the sdkmanager bundled with the JitPack image crashes on JDK 21
-# (NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema). The Android Gradle plugin
-# downloads the components declared in the root build.gradle (compileSdk 37,
-# NDK 29.0.13113456) on demand instead.
+# The Android Gradle plugin downloads the components declared in the root build.gradle
+# (compileSdk 37, NDK 29.0.13113456) on demand. sdkmanager cannot be used for that here:
+# the one bundled with the JitPack image crashes on JDK 21
+# (NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema).
+# So the SDK licences have to be pre-accepted by writing the licence hashes directly,
+# otherwise AGP aborts with LicenceNotAcceptedException for ndk;29.0.13113456.
+before_install:
+  - export SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android-sdk-linux}}" && mkdir -p "$SDK/licenses" && printf '\nd56f5187479451eabf01fb78af6dfcb131a6481e\n8933bad161af4178b1185d1a37fbf41ea5269c55\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n' > "$SDK/licenses/android-sdk-license" && printf '\n84831b9409646a918e30573bab4c9c91346d8abd\n' > "$SDK/licenses/android-sdk-preview-license" && ls "$SDK/licenses"
 
 install:
   - ./gradlew publishToMavenLocal --console=plain
