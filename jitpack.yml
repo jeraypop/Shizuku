@@ -3,10 +3,10 @@
 jdk:
   - openjdk21
 
-before_install:
-  # Root build.gradle pins compileSdk 37 / build-tools 37.0.0 / NDK 29.0.13113456
-  - yes | sdkmanager --licenses > /dev/null || true
-  - sdkmanager --install "platforms;android-37" "build-tools;37.0.0" "ndk;29.0.13113456" > /dev/null || true
+# No before_install step: the sdkmanager bundled with the JitPack image fails on JDK 21
+# (NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema). The Android Gradle plugin
+# downloads the pinned components on demand instead (compileSdk 36 / build-tools 36.0.0 /
+# NDK 29.0.13113456), which is what the root build.gradle declares.
 
 install:
   - ./gradlew publishToMavenLocal --console=plain

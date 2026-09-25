@@ -11,12 +11,14 @@ idea.module {
 subprojects { subproject ->
     plugins.withId("com.android.base") {
         android {
-            compileSdk = 37
-            buildToolsVersion = "37.0.0"
+            // AGP 8.11.1 is only tested up to compile SDK 36; building against 37 makes the
+            // Android Gradle plugin fail with "Failed to find target with hash string 'android-37'".
+            compileSdk = 36
+            buildToolsVersion = "36.0.0"
             ndkVersion = "29.0.13113456"
             defaultConfig {
                 minSdk = 24
-                targetSdk = 37
+                targetSdk = 36
             }
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_21
