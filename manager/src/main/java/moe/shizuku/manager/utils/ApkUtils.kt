@@ -26,6 +26,23 @@ private const val TAG = "ApkUtils"
 
 const val ORIGINAL_PACKAGE_NAME = "moe.shizuku.privileged.api"
 
+// Set as <meta-data> in the application tag of the standalone app shell (:app).
+// Host apps integrating the manager library don't (and shouldn't) set it:
+// "Hide Shizuku from other apps" only makes sense for the standalone package,
+// and running it inside a host would clone/rename the host APK.
+// Stealth clones keep this metadata (the whole manifest is copied), so the
+// entry stays visible after hiding.
+const val METADATA_STANDALONE = "moe.shizuku.manager.STANDALONE"
+
+val isStandaloneBuild: Boolean by lazy {
+    runCatching {
+        appContext.packageManager
+            .getApplicationInfo(appContext.packageName, 0)
+            .metaData
+            ?.getBoolean(METADATA_STANDALONE) == true
+    }.getOrDefault(false)
+}
+
 private val app = ShizukuApplication.application
 private val appContext = ShizukuApplication.appContext
 

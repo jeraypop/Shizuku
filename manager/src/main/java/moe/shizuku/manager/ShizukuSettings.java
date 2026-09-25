@@ -41,6 +41,12 @@ public class ShizukuSettings {
         public static final String KEY_REPORT_BUG = "report_bug";
         public static final String KEY_LEGACY_PAIRING = "legacy_pairing";
         public static final String KEY_CATEGORY_ADVANCED = "category_advanced";
+        public static final String KEY_CATEGORY_SUPPORT = "category_support";
+        public static final String KEY_CATEGORY_HOME_CARDS = "category_home_cards";
+        public static final String KEY_HOME_CARD_TERMINAL = "home_card_terminal";
+        public static final String KEY_HOME_CARD_AUTOMATION = "home_card_automation";
+        public static final String KEY_HOME_CARD_STEALTH = "home_card_stealth";
+        public static final String KEY_HOME_CARD_LEARN_MORE = "home_card_learn_more";
     }
 
     public static class UpdateMode {
@@ -109,6 +115,19 @@ public class ShizukuSettings {
 
     public static boolean getAutoDisableUsbDebugging() {
         return getPreferences().getBoolean(Keys.KEY_AUTO_DISABLE_USB_DEBUGGING, false);
+    }
+
+    /**
+     * Home page cards are opt-in: the default is decided by the build flavor
+     * (standalone app = on, host app embedding the library = off), and the user
+     * can flip each one in Settings afterwards.
+     */
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        return getPreferences().getBoolean(key, defaultValue);
+    }
+
+    public static void putBoolean(String key, boolean value) {
+        getPreferences().edit().putBoolean(key, value).apply();
     }
     
     public static String getLastPromptedVersion() {

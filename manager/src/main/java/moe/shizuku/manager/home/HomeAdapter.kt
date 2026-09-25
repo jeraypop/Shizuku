@@ -2,7 +2,13 @@ package moe.shizuku.manager.home
 
 import android.os.Build
 import kotlinx.coroutines.CoroutineScope
+import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.ShizukuSettings.Keys.KEY_HOME_CARD_AUTOMATION
+import moe.shizuku.manager.ShizukuSettings.Keys.KEY_HOME_CARD_LEARN_MORE
+import moe.shizuku.manager.ShizukuSettings.Keys.KEY_HOME_CARD_STEALTH
+import moe.shizuku.manager.ShizukuSettings.Keys.KEY_HOME_CARD_TERMINAL
 import moe.shizuku.manager.management.AppsViewModel
+import moe.shizuku.manager.utils.ApkUtils.isStandaloneBuild
 import moe.shizuku.manager.utils.EnvironmentUtils
 import moe.shizuku.manager.utils.UserHandleCompat
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
@@ -47,7 +53,7 @@ class HomeAdapter(private val homeModel: HomeViewModel, private val appsModel: A
 
         if (adbPermission) {
             addItem(ManageAppsViewHolder.CREATOR, status to grantedCount, ID_APPS)
-            addItem(TerminalViewHolder.CREATOR, status, ID_TERMINAL)
+            if (homeCardEnabled(KEY_HOME_CARD_TERMINAL)) addItem(TerminalViewHolder.CREATOR, status, ID_TERMINAL)
         }
 
         if (running && !adbPermission) {
@@ -66,11 +72,19 @@ class HomeAdapter(private val homeModel: HomeViewModel, private val appsModel: A
 
             addItem(StartAdbViewHolder.CREATOR, null, ID_START_ADB)
         }
-        addItem(AutomationViewHolder.CREATOR, null, ID_AUTOMATION)
+        if (homeCardEnabled(KEY_HOME_CARD_AUTOMATION)) addItem(AutomationViewHolder.CREATOR, null, ID_AUTOMATION)
 
-        addItem(StealthViewHolder.CREATOR, null, ID_STEALTH)
+        // Stealth is always off when embedded in a host app, no matter what is stored in settings.
+        if (isStandaloneBuild && homeCardEnabled(KEY_HOME_CARD_STEALTH)) addItem(StealthViewHolder.CREATOR, null, ID_STEALTH)
 
-        addItem(LearnMoreViewHolder.CREATOR, null, ID_LEARN_MORE)
+        if (homeCardEnabled(KEY_HOME_CARD_LEARN_MORE)) addItem(LearnMoreViewHolder.CREATOR, null, ID_LEARN_MORE)
         notifyDataSetChanged()
     }
+
+    /**
+     * Each optional home card is user-controlled from Settings. The default is
+     * decided by the build: on for the standalone app, off when the manager is
+     * embedded in a host app.
+     */
+    private fun homeCardEnabled(key: String): Boolean = ShizukuSettings.getBoolean(key, isStandaloneBuild)
 }

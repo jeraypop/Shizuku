@@ -184,6 +184,7 @@
     <string name="settings_update_beta">Beta</string>
     <string name="settings_help">Help</string>
     <string name="settings_report_bug">Report a bug</string>
+    <string name="settings_home_cards">Home page cards</string>
     <string name="settings_advanced">Advanced</string>
     <string name="settings_legacy_pairing">Legacy pairing</string>
     <string name="settings_legacy_pairing_summary">Enter the pairing code in a dialog instead of a notification</string>

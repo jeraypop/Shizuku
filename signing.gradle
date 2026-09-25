@@ -9,6 +9,22 @@ if (ksFile.canRead()) {
         android.signingConfigs.sign.keyAlias props["KEYSTORE_ALIAS"]
         android.signingConfigs.sign.keyPassword props["KEYSTORE_ALIAS_PASSWORD"]
     }
+} else if (ksFile.canRead()) {
+    props.load(new FileInputStream(ksFile))
+
+    // Fall back to the debug key unless all four values are filled in,
+    // so an unfinished signing.properties never breaks the build.
+    if (props["KEYSTORE_FILE"] && props["KEYSTORE_PASSWORD"] && props["KEYSTORE_ALIAS"] && props["KEYSTORE_ALIAS_PASSWORD"]) {
+        android.signingConfigs.sign.storeFile file(props["KEYSTORE_FILE"])
+        android.signingConfigs.sign.storePassword props["KEYSTORE_PASSWORD"]
+        android.signingConfigs.sign.keyAlias props["KEYSTORE_ALIAS"]
+        android.signingConfigs.sign.keyPassword props["KEYSTORE_ALIAS_PASSWORD"]
+    } else {
+        android.signingConfigs.sign.storeFile = android.signingConfigs.debug.storeFile
+        android.signingConfigs.sign.storePassword = android.signingConfigs.debug.storePassword
+        android.signingConfigs.sign.keyAlias = android.signingConfigs.debug.keyAlias
+        android.signingConfigs.sign.keyPassword = android.signingConfigs.debug.keyPassword
+    }
 } else {
     android.signingConfigs.sign.storeFile = android.signingConfigs.debug.storeFile
     android.signingConfigs.sign.storePassword = android.signingConfigs.debug.storePassword

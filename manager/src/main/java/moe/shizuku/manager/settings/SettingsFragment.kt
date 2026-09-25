@@ -49,6 +49,7 @@ import moe.shizuku.manager.ktx.toHtml
 import moe.shizuku.manager.receiver.BootCompleteReceiver
 import moe.shizuku.manager.receiver.NotifCancelReceiver
 import moe.shizuku.manager.receiver.ShizukuReceiverStarter
+import moe.shizuku.manager.utils.ApkUtils.isStandaloneBuild
 import moe.shizuku.manager.utils.CustomTabsHelper
 import moe.shizuku.manager.utils.EnvironmentUtils
 import moe.shizuku.manager.utils.SettingsHelper
@@ -78,7 +79,12 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
     private lateinit var helpPreference: Preference
     private lateinit var reportBugPreference: Preference
     private lateinit var legacyPairingPreference: TwoStatePreference
+    private lateinit var supportCategory: PreferenceCategory
     private lateinit var advancedCategory: PreferenceCategory
+    private lateinit var homeCardTerminalPreference: TwoStatePreference
+    private lateinit var homeCardAutomationPreference: TwoStatePreference
+    private lateinit var homeCardStealthPreference: TwoStatePreference
+    private lateinit var homeCardLearnMorePreference: TwoStatePreference
 
     private lateinit var batteryOptimizationListener: ActivityResultLauncher<Intent>
     private var batteryOptimizationContinuation: CancellableContinuation<Boolean>? = null
@@ -112,7 +118,12 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         helpPreference = findPreference(KEY_HELP)!!
         reportBugPreference = findPreference(KEY_REPORT_BUG)!!
         legacyPairingPreference = findPreference(KEY_LEGACY_PAIRING)!!
+        supportCategory = findPreference(KEY_CATEGORY_SUPPORT)!!
         advancedCategory = findPreference(KEY_CATEGORY_ADVANCED)!!
+        homeCardTerminalPreference = findPreference(KEY_HOME_CARD_TERMINAL)!!
+        homeCardAutomationPreference = findPreference(KEY_HOME_CARD_AUTOMATION)!!
+        homeCardStealthPreference = findPreference(KEY_HOME_CARD_STEALTH)!!
+        homeCardLearnMorePreference = findPreference(KEY_HOME_CARD_LEARN_MORE)!!
 
         batteryOptimizationListener = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val accepted = SettingsHelper.isIgnoringBatteryOptimizations(requireContext())
@@ -289,38 +300,71 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             } else isVisible = false
         }
 
-        translationPreference.apply {
-            summary = context.getString(R.string.settings_translation_summary, context.getString(R.string.app_name))
-            setOnPreferenceClickListener {
-                CustomTabsHelper.launchUrlOrCopy(context, context.getString(R.string.translation_url))
-                true
+        if (isStandaloneBuild) {
+            translationPreference.apply {
+                summary = context.getString(R.string.settings_translation_summary, context.getString(R.string.app_name))
+                setOnPreferenceClickListener {
+                    CustomTabsHelper.launchUrlOrCopy(context, context.getString(R.string.translation_url))
+                    true
+                }
             }
+
+            translationContributorsPreference.apply {
+                val contributors = context.getString(R.string.translation_contributors).toHtml().toString()
+                if (contributors.isNotBlank()) {
+                    summary = contributors
+                } else isVisible = false
+            }
+        } else {
+            translationPreference.isVisible = false
+            translationContributorsPreference.isVisible = false
         }
 
-        translationContributorsPreference.apply {
-            val contributors = context.getString(R.string.translation_contributors).toHtml().toString()
-            if (contributors.isNotBlank()) {
-                summary = contributors
-            } else isVisible = false
-        }
-
+        updateModePreference.isVisible = isStandaloneBuild
         updateModePreference.value = ShizukuSettings.getUpdateMode()
 
-        helpPreference.setOnPreferenceClickListener {
-            CustomTabsHelper.launchUrlOrCopy(context, context.getString(R.string.help_url))
-            true
+        if (isStandaloneBuild) {
+            helpPreference.setOnPreferenceClickListener {
+                CustomTabsHelper.launchUrlOrCopy(context, context.getString(R.string.help_url))
+                true
+            }
+
+            reportBugPreference.setOnPreferenceClickListener {
+                BugReportDialog().show(parentFragmentManager, "BugReportDialog")
+                true
+            }
+        } else {
+            helpPreference.isVisible = false
+            reportBugPreference.isVisible = false
         }
 
-        reportBugPreference.setOnPreferenceClickListener {
-            BugReportDialog().show(parentFragmentManager, "BugReportDialog")
-            true
-        }
+        // All three items of this category (update mode, help, report bug) are hidden when
+        // embedded in a host app, so hide the empty category title as well.
+        supportCategory.isVisible = isStandaloneBuild
 
         legacyPairingPreference.apply {
             isVisible = !EnvironmentUtils.isTelevision()
         }
 
         advancedCategory.isVisible = legacyPairingPreference.isVisible
+
+        // Stealth clones and renames the whole APK, which makes no sense when embedded in a host
+        // app. Keep the toggle (and therefore the card) for the standalone app only.
+        homeCardStealthPreference.isVisible = isStandaloneBuild
+
+        listOf(
+            KEY_HOME_CARD_TERMINAL to homeCardTerminalPreference,
+            KEY_HOME_CARD_AUTOMATION to homeCardAutomationPreference,
+            KEY_HOME_CARD_STEALTH to homeCardStealthPreference,
+            KEY_HOME_CARD_LEARN_MORE to homeCardLearnMorePreference,
+        ).forEach { (key, preference) ->
+            // Default: on for the standalone app, off when embedded in a host app.
+            preference.isChecked = ShizukuSettings.getBoolean(key, isStandaloneBuild)
+            preference.setOnPreferenceChangeListener { _, newValue ->
+                ShizukuSettings.putBoolean(key, newValue as Boolean)
+                true
+            }
+        }
     }
 
     override fun onResume() {

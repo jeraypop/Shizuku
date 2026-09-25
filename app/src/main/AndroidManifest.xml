@@ -23,6 +23,13 @@
         android:theme="@style/AppTheme"
         tools:targetApi="33">
 
+        <!-- Marks this shell as the standalone Shizuku app; the library shows the
+             "Hide Shizuku from other apps" entry only when this is present.
+             Stealth clones keep it (manifest is copied), host apps never set it. -->
+        <meta-data
+            android:name="moe.shizuku.manager.STANDALONE"
+            android:value="true" />
+
         <activity
             android:name="moe.shizuku.manager.MainActivity"
             android:banner="@mipmap/banner"

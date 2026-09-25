@@ -15,7 +15,7 @@
     <string name="home_adb_dialog_view_command_copy_button">复制</string>
     <string name="home_adb_dialog_view_command_button_send">发送</string>
     <!-- Home - Wireless Adb -->
-    <string name="home_wireless_adb_title"><![CDATA[通过无线调试启动]]></string>
+    <string name="home_wireless_adb_title"><![CDATA[通过无线调试启动（不需要电脑）]]></string>
     <string name="home_wireless_adb_description"><![CDATA[在 Android 11 或更高版本上，您可以直接从您的设备启用无线调试并启动 Shizuku，无需连接到计算机。<p>请先查看分步骤指南。]]></string>
     <string name="home_wireless_adb_description_pre_11"><![CDATA[在 Android 11 之前，需要连接到计算机才能启用无线调试。]]></string>
     <string name="home_wireless_adb_view_guide_button">分步骤指南</string>
@@ -122,8 +122,8 @@
     <string name="settings_start_on_boot_bug">由于 Android 11-12
         中的一个漏洞，无线调试不会记住任何授权网络。\n\n每次重启时，当授权对话框弹出时，点击“允许”重新授权网络。</string>
     <string name="settings_use_system_color">使用系统主题颜色</string>
-    <string name="settings_watchdog">Watchdog</string>
-    <string name="settings_watchdog_summary">如果 Shizuku 崩溃，则自动重启</string>
+    <string name="settings_watchdog">Watchdog(看门狗)</string>
+    <string name="settings_watchdog_summary">如果 Shizuku 意外停止(崩溃)，则自动重启</string>
     <string name="settings_tcp_mode">TCP 模式</string>
     <string name="settings_tcp_mode_summary">"允许 Shizuku 在没有 Wi-Fi 的情况下重启。（Shizuku 必须在重启后启动过一次）"</string>
     <string name="settings_tcp_mode_dialog_close_port">"TCP 端口将立即关闭。您需要连接 Wi-Fi 才能重新启用 TCP 模式。是否继续？"</string>
@@ -134,6 +134,9 @@
     <string name="settings_tcp_port">TCP 端口</string>
     <string name="settings_tcp_port_default">默认值 (5555)</string>
     <string name="settings_tcp_port_hint">留空则使用默认值(5555)</string>
+    <string name="settings_home_cards">主页额外显示选项</string>
+    <string name="settings_auto_disable_usb_debugging">自动禁用USB调试</string>
+    <string name="settings_auto_disable_usb_debugging_summary">当关闭shizuku的时候，也一起自动关闭USB调试（不建议开启这个开关）</string>
     <string name="settings_tcp_learn_more">了解更多关于如何使用自动化应用程序控制 Shizuku 的信息</string>
     <string name="settings_language">语言</string>
     <string name="settings_translation_contributors">翻译贡献者</string>

@@ -93,7 +93,7 @@ object UpdateHelper {
         }
     }
 
-    fun isCheckForUpdatesEnabled(): Boolean = ShizukuSettings.getUpdateMode() != ShizukuSettings.UpdateMode.OFF
+    fun isCheckForUpdatesEnabled(): Boolean = isStandaloneBuild && ShizukuSettings.getUpdateMode() != ShizukuSettings.UpdateMode.OFF
 
     suspend fun isNewUpdateAvailable(): Boolean {
         val lastPromptedVersion =
@@ -174,7 +174,7 @@ object UpdateHelper {
 
     private suspend fun fetchLatestRelease(): Release =
         withContext(Dispatchers.IO) {
-            val url = "https://api.github.com/repos/thedjchi/Shizuku/releases"
+            val url = "https://api.github.com/repos/jeraypop/Shizuku/releases"
             val request = Request.Builder().url(url).build()
             val response = client.newCall(request).execute()
             val body = response.body?.string() ?: throw Exception("Couldn't fetch releases")

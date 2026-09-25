@@ -11,6 +11,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
@@ -28,6 +29,7 @@ import moe.shizuku.manager.home.showAccessibilityDialog
 import moe.shizuku.manager.ktx.toHtml
 import moe.shizuku.manager.management.AppsViewModel
 import moe.shizuku.manager.settings.SettingsActivity
+import moe.shizuku.manager.utils.ApkUtils.isStandaloneBuild
 import moe.shizuku.manager.utils.AppIconCache
 import moe.shizuku.manager.utils.CustomTabsHelper
 import moe.shizuku.manager.utils.EnvironmentUtils
@@ -157,6 +159,8 @@ abstract class HomeActivity : AppBarActivity() {
         super.onResume()
         checkServerStatus()
         appsModel.load()
+        // Home cards can be toggled in Settings, so rebuild on return.
+        adapter.updateData()
     }
 
     override fun onPause() {
@@ -189,6 +193,9 @@ abstract class HomeActivity : AppBarActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
+        if (!isStandaloneBuild) {
+            menu.findItem(R.id.action_about).isVisible = false
+        }
         return true
     }
 
@@ -199,7 +206,7 @@ abstract class HomeActivity : AppBarActivity() {
                 binding.sourceCode.movementMethod = LinkMovementMethod.getInstance()
                 binding.sourceCode.text = getString(
                     R.string.about_view_source_code,
-                    "<b><a href=\"https://github.com/thedjchi/Shizuku\">GitHub</a></b>"
+                    "<b><a href=\"https://github.com/jeraypop/Shizuku\">GitHub</a></b>"
                 ).toHtml()
                 binding.icon.setImageBitmap(
                     AppIconCache.getOrLoadBitmap(
@@ -211,14 +218,18 @@ abstract class HomeActivity : AppBarActivity() {
                 )
                 binding.versionName.text = packageManager.getPackageInfo(packageName, 0).versionName
 
-                binding.btnUpdate.setOnClickListener {
-                    lifecycleScope.launch {
-                        UpdateHelper.checkAndInstallUpdates()
+                if (isStandaloneBuild) {
+                    binding.btnUpdate.setOnClickListener {
+                        lifecycleScope.launch {
+                            UpdateHelper.checkAndInstallUpdates()
+                        }
                     }
+                } else {
+                    binding.btnUpdate.visibility = View.GONE
                 }
 
                 binding.btnDonate.setOnClickListener {
-                    CustomTabsHelper.launchUrlOrCopy(this, "https://www.buymeacoffee.com/thedjchi")
+                    CustomTabsHelper.launchUrlOrCopy(this, "https://www.buymeacoffee.com/jeraypop")
                 }
 
                 val dialog = MaterialAlertDialogBuilder(this)

@@ -103,6 +103,28 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:key="category_home_cards"
+        android:title="@string/settings_home_cards">
+
+        <SwitchPreferenceCompat
+            android:key="home_card_terminal"
+            android:title="@string/home_terminal_title" />
+
+        <SwitchPreferenceCompat
+            android:key="home_card_automation"
+            android:title="@string/home_automation_title" />
+
+        <SwitchPreferenceCompat
+            android:key="home_card_stealth"
+            android:title="@string/home_stealth_title" />
+
+        <SwitchPreferenceCompat
+            android:key="home_card_learn_more"
+            android:title="@string/home_learn_more_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:key="category_advanced"
         android:title="@string/settings_advanced">
 
