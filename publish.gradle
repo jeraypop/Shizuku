@@ -1,0 +1,25 @@
+// Publishes a library module so a host app can embed Shizuku with a single dependency:
+//   JitPack:  implementation "com.github.jeraypop.Shizuku:manager:<version>"  (repo: jitpack.io)
+//   Local:    implementation "com.github.jeraypop.Shizuku:manager:<version>"  (after publishToMavenLocal)
+// All modules share one groupId so the manager POM's transitive deps (server/starter/...)
+// resolve inside the same JitPack namespace.
+apply plugin: "maven-publish"
+
+android {
+    publishing {
+        singleVariant("release")
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = "com.github.jeraypop.Shizuku"
+                artifactId = project.path.replace(":", "")
+                version = rootProject.ext.versionName
+            }
+        }
+    }
+}

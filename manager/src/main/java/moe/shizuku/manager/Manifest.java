@@ -3,7 +3,11 @@ package moe.shizuku.manager;
 public class Manifest {
 
     public static class permission_group {
-        public static final String API = "moe.shizuku.manager.permission-group.API";
+        /** Parameterized per applicationId so host app and standalone app can coexist
+         *  (permission groups are globally unique, owned by the first installer). */
+        public static String API(String applicationId) {
+            return applicationId + ".permission-group.API";
+        }
     }
 
     public static class permission {

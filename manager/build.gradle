@@ -1,22 +1,22 @@
 import java.nio.file.Paths
-import org.gradle.process.ExecOperations
-import com.android.build.gradle.internal.tasks.CompileArtProfileTask
 
 plugins {
-    id "com.android.application"
+    id "com.android.library"
     id "org.jetbrains.kotlin.android"
     id "org.jetbrains.kotlin.plugin.serialization"
     id "dev.rikka.tools.refine"
-    id "dev.rikka.tools.autoresconfig"
     id "dev.rikka.tools.materialthemebuilder"
 }
 
 android {
     namespace = "moe.shizuku.manager"
     defaultConfig {
-        applicationId = "moe.shizuku.privileged.api"
         versionCode = rootProject.ext.versionCode
         versionName = rootProject.ext.versionName
+        // Libraries don't get VERSION_* in BuildConfig automatically (app-only);
+        // BugReportDialog shows it.
+        buildConfigField "String", "VERSION_NAME", "\"${rootProject.ext.versionName}\""
+        consumerProguardFiles "consumer-rules.pro"
         externalNativeBuild {
             cmake {
                 arguments = ["-DANDROID_STL=none"]
@@ -28,25 +28,14 @@ android {
         viewBinding = true
         prefab = true
     }
-    signingConfigs {
-        sign {}
-    }
     buildTypes {
-        debug {
-            signingConfig = signingConfigs.sign
-        }
         release {
-            signingConfig = signingConfigs.sign
-            minifyEnabled = true
-            shrinkResources = true
-            vcsInfo.include = false
-            proguardFiles = ["proguard-rules.pro"]
         }
     }
     externalNativeBuild {
         cmake {
             path = file("src/main/jni/CMakeLists.txt")
-            version = "3.31.0+"
+            version = "3.22.1+"
         }
     }
     kotlinOptions {
@@ -56,23 +45,10 @@ android {
         jniLibs {
             useLegacyPackaging = true
         }
-        resources {
-            excludes += ["**"]
-        }
-    }
-    dependenciesInfo {
-        includeInApk = false
     }
     lint {
         checkReleaseBuilds = false
     }
-}
-
-autoResConfig {
-    generatedClassFullName = "rikka.shizuku.manager.ShizukuLocales"
-    generateRes = false
-    generatedArrayFirstItem = "SYSTEM"
-    generateLocaleConfig = true
 }
 
 materialThemeBuilder {
@@ -96,59 +72,17 @@ materialThemeBuilder {
     generateTextColors = true
 }
 
-def collapseReleaseResourceNames = tasks.register("collapseReleaseResourceNames") {
-    def aapt2 = Paths.get(project.android.sdkDirectory.path, "build-tools", project.android.buildToolsVersion, "aapt2")
-    def zip = Paths.get(project.buildDir.path, "intermediates",
-        "optimized_processed_res", "release", "optimizeReleaseResources", "resources-release-optimize.ap_")
-    doLast {
-        def optimized = new File("${zip}.opt")
-        def execOps = services.get(ExecOperations)
-        execOps.exec {
-            commandLine aapt2.toFile(), "optimize", "--collapse-resource-names",
-                "--resources-config-path", "aapt2-resources.cfg",
-                "-o", optimized, zip.toFile()
-            ignoreExitValue = false
-        }
-        if (optimized.exists()) {
-            delete(zip.toFile())
-            optimized.renameTo(zip.toFile())
-        }
-    }
-}
-
 afterEvaluate {
-    tasks.getByName("optimizeReleaseResources").finalizedBy(collapseReleaseResourceNames)
-    tasks.getByName("preReleaseBuild").dependsOn(":shell:assembleRelease")
-    tasks.getByName("preDebugBuild").dependsOn(":shell:assembleDebug")
-}
-
-android.applicationVariants.configureEach { variant ->
-    variant.outputs.configureEach {
-        outputFileName = "shizuku-v${variant.versionName}-${variant.name}.apk"
-
-        variant.assembleProvider.get().doLast {
-            def outDir = new File(rootDir, "out")
-            def mappingDir = new File(outDir, "mapping").absolutePath
-            def apkDir = new File(outDir, "apk").absolutePath
-
-            if (variant.getBuildType().isMinifyEnabled()) {
-                copy {
-                    from variant.mappingFileProvider.get()
-                    into mappingDir
-                    rename { String fileName -> "mapping-${variant.versionName}.txt" }
-                }
-                copy {
-                    from outputFile
-                    into apkDir
-                }
-            }
-        }
+    // :shell produces rish_shizuku.dex which the shell task copies into manager assets;
+    // make sure it is built before the assets are merged.
+    tasks.matching { it.name == "mergeReleaseAssets" }.configureEach {
+        dependsOn(":shell:assembleRelease")
+    }
+    tasks.matching { it.name == "mergeDebugAssets" }.configureEach {
+        dependsOn(":shell:assembleDebug")
     }
 }
 
-tasks.withType(CompileArtProfileTask.class).configureEach {
-    enabled = false
-}
 configurations.configureEach {
     exclude group: "androidx.appcompat", module: "appcompat"
     exclude group: "androidx.profileinstaller", module: "profileinstaller"
@@ -158,15 +92,19 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
-    implementation project(":server")
-    implementation project(":rish")
-    implementation project(":starter")
-    implementation project(":api")
-    implementation project(":provider")
+    // api-scope so that the published POM carries the whole Shizuku runtime
+    // (server runs from the host APK via app_process) and host apps only need
+    // a single dependency.
+    api project(":server")
+    api project(":rish")
+    api project(":starter")
+    api project(":api")
+    api project(":provider")
 
     implementation libs.hidden.compat
     compileOnly libs.hidden.stub
 
+    implementation "androidx.startup:startup-runtime:1.2.0"
     implementation "androidx.browser:browser:1.8.0"
     implementation "androidx.core:core-ktx:1.16.0"
     implementation "androidx.fragment:fragment-ktx:1.8.7"
@@ -205,4 +143,4 @@ dependencies {
     implementation "me.zhanghai.android.appiconloader:appiconloader:1.5.0"
 }
 
-apply from: rootProject.file("signing.gradle")
+apply from: rootProject.file("publish.gradle")

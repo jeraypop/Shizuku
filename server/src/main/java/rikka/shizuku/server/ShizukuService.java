@@ -302,7 +302,7 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
             return;
         }
 
-        Intent intent = new Intent(ServerConstants.REQUEST_PERMISSION_ACTION)
+        Intent intent = new Intent(ServerConstants.getRequestPermissionAction())
                 .setPackage(MANAGER_APPLICATION_ID)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
                 .putExtra("uid", callingUid)

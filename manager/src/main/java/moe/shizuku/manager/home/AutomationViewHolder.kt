@@ -10,8 +10,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
-import moe.shizuku.manager.BuildConfig
 import moe.shizuku.manager.R
+import moe.shizuku.manager.ShizukuApplication
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.HomeAutomationBinding
 import moe.shizuku.manager.databinding.HomeAutomationBottomSheetBinding
@@ -119,8 +119,8 @@ class AutomationViewHolder(
 
     private fun getIntentAction(buttonId: Int): String =
         when (buttonId) {
-            R.id.buttonStart -> "${BuildConfig.APPLICATION_ID}.START"
-            R.id.buttonStop -> "${BuildConfig.APPLICATION_ID}.STOP"
+            R.id.buttonStart -> "${ShizukuApplication.appContext.packageName}.START"
+            R.id.buttonStop -> "${ShizukuApplication.appContext.packageName}.STOP"
             else -> ""
         }
 }

@@ -12,3 +12,5 @@ android {
 dependencies {
     compileOnly libs.hidden.stub
 }
+
+apply from: rootProject.file("publish.gradle")

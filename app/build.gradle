@@ -1,0 +1,55 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace = "moe.shizuku.standalone"
+    defaultConfig {
+        // Standalone Shizuku app: must stay in sync with the fallback value in
+        // :server / :starter / :shell BuildConfig.MANAGER_APPLICATION_ID
+        applicationId = "moe.shizuku.privileged.api"
+        versionCode = rootProject.ext.versionCode
+        versionName = rootProject.ext.versionName
+        manifestPlaceholders = ["shizukuApplicationId": applicationId]
+    }
+    signingConfigs {
+        sign {}
+    }
+    buildTypes {
+        debug {
+            signingConfig = signingConfigs.sign
+        }
+        release {
+            signingConfig = signingConfigs.sign
+            minifyEnabled = true
+            shrinkResources = true
+            vcsInfo.include = false
+            proguardFiles = ["proguard-rules.pro"]
+        }
+    }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+        resources {
+            excludes += ["**"]
+        }
+    }
+    dependenciesInfo {
+        includeInApk = false
+    }
+    lint {
+        checkReleaseBuilds = false
+    }
+}
+
+dependencies {
+    implementation project(":manager")
+
+    // Hidden-API stubs are compile-time only. R8 needs them on the classpath when
+    // minifying the release APK (same as :manager had before becoming a library);
+    // they are NOT packaged into the APK.
+    compileOnly libs.hidden.stub
+}
+
+apply from: rootProject.file("signing.gradle")

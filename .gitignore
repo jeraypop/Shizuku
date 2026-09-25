@@ -5,6 +5,7 @@
 /.idea/libraries
 .DS_Store
 /build
+build/
 /captures
 .externalNativeBuild
 /.idea
@@ -12,3 +13,5 @@
 /out
 /signing.properties
 /.kotlin
+*.log
+.workbuddy/

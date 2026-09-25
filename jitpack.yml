@@ -1,0 +1,12 @@
+# JitPack build configuration for jeraypop/Shizuku (multi-module Android library).
+# Consumed as: com.github.jeraypop.Shizuku:<module>:<tag>   (repo: https://jitpack.io)
+jdk:
+  - openjdk21
+
+before_install:
+  # Root build.gradle pins compileSdk 37 / build-tools 37.0.0 / NDK 29.0.13113456
+  - yes | sdkmanager --licenses > /dev/null || true
+  - sdkmanager --install "platforms;android-37" "build-tools;37.0.0" "ndk;29.0.13113456" > /dev/null || true
+
+install:
+  - ./gradlew publishToMavenLocal --console=plain

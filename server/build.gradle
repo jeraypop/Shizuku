@@ -10,7 +10,8 @@ android {
         buildConfig = true
     }
     defaultConfig {
-        buildConfigField "String", "MANAGER_APPLICATION_ID", "\"${project(':manager').android.defaultConfig.applicationId}\""
+        // Fallback only; the real manager package is resolved at runtime from CLASSPATH
+        buildConfigField "String", "MANAGER_APPLICATION_ID", '"moe.shizuku.privileged.api"'
     }
 }
 
@@ -29,3 +30,5 @@ dependencies {
     implementation libs.hidden.compat
     compileOnly libs.hidden.stub
 }
+
+apply from: rootProject.file("publish.gradle")

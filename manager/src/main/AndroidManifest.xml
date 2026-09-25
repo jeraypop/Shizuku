@@ -3,6 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- This manifest is designed to be merged into a host app (Shizuku as a library).
+         Application-level attributes (icon/label/theme/backup...) are intentionally NOT
+         set here so they never conflict with the host app; the standalone app shell (:app)
+         provides them. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -36,8 +40,10 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
+    <!-- Permission groups are globally unique and owned by the first installer;
+         parameterize so the host app and the standalone app can coexist. -->
     <permission-group
-        android:name="moe.shizuku.manager.permission-group.API"
+        android:name="${shizukuApplicationId}.permission-group.API"
         android:description="@string/permission_group_description"
         android:icon="@drawable/ic_system_icon"
         android:label="@string/permission_group_label" />
@@ -52,18 +58,18 @@
         android:description="@string/permission_description"
         android:icon="@drawable/ic_system_icon"
         android:label="@string/permission_label"
-        android:permissionGroup="moe.shizuku.manager.permission-group.API"
+        android:permissionGroup="${shizukuApplicationId}.permission-group.API"
         android:protectionLevel="dangerous" />
     <uses-permission
         android:name="moe.shizuku.manager.permission.API_V23"
         tools:node="remove" />
 
     <permission
-        android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="${shizukuApplicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature"
         tools:node="remove" />
     <uses-permission
-        android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="${shizukuApplicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         tools:node="remove" />
 
     <queries>
@@ -71,19 +77,6 @@
     </queries>
 
     <application
-        android:name=".ShizukuApplication"
-        android:allowBackup="true"
-        android:autoRevokePermissions="allowed"
-        android:banner="@drawable/ic_launcher"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:directBootAware="true"
-        android:enableOnBackInvokedCallback="true"
-        android:fullBackupContent="@xml/backup_descriptor"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:localeConfig="@xml/locales_config"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         tools:remove="android:appComponentFactory"
         tools:targetApi="33">
@@ -91,42 +84,39 @@
         <activity
             android:name=".MainActivity"
             android:banner="@mipmap/banner"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-
-                <!-- 2023.08.03: Google play enforces that apps with LEANBACK_LAUNCHER Activity must
-                be uploaded with App Bundle format, -->
-                <!-- and possibly additional review steps. To avoid problems, remove it temporarily. -->
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
+            android:exported="true"
+            android:theme="@style/AppTheme">
         </activity>
         <activity
             android:name=".management.ApplicationManagementActivity"
-            android:label="@string/home_app_management_title" />
+            android:label="@string/home_app_management_title"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".adb.AdbPairingTutorialActivity"
-            android:label="@string/adb_pairing" />
+            android:label="@string/adb_pairing"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".shell.ShellTutorialActivity"
-            android:label="@string/home_terminal_title" />
+            android:label="@string/home_terminal_title"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".stealth.StealthTutorialActivity"
             android:label="@string/home_stealth_title"
+            android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".settings.SettingsActivity"
             android:exported="false"
-            android:label="@string/settings_title">
+            android:label="@string/settings_title"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
             </intent-filter>
         </activity>
         <activity
             android:name=".starter.StarterActivity"
-            android:label="@string/starter" />
+            android:label="@string/starter"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".settings.BugReportDialogActivity"
             android:theme="@style/Theme.App.DialogHost"
@@ -142,7 +132,7 @@
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"
             android:theme="@style/GrantPermissions">
             <intent-filter>
-                <action android:name="${applicationId}.intent.action.REQUEST_PERMISSION" />
+                <action android:name="${shizukuApplicationId}.intent.action.REQUEST_PERMISSION" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -166,7 +156,7 @@
             android:permission="moe.shizuku.manager.permission.API"
             android:theme="@style/GrantPermissions">
             <intent-filter>
-                <action android:name="${applicationId}.intent.action.REQUEST_AUTHORIZATION" />
+                <action android:name="${shizukuApplicationId}.intent.action.REQUEST_AUTHORIZATION" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -229,7 +219,7 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="${applicationId}.START" />
+                <action android:name="${shizukuApplicationId}.START" />
             </intent-filter>
         </receiver>
 
@@ -238,7 +228,7 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="${applicationId}.STOP" />
+                <action android:name="${shizukuApplicationId}.STOP" />
             </intent-filter>
         </receiver>
 
@@ -248,7 +238,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="${shizukuApplicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -258,12 +248,24 @@
 
         <provider
             android:name=".ShizukuManagerProvider"
-            android:authorities="${applicationId}.shizuku"
+            android:authorities="${shizukuApplicationId}.shizuku"
             android:directBootAware="true"
             android:enabled="true"
             android:exported="true"
             android:multiprocess="false"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+        <!-- Initializes the manager code in the host process without touching the
+             host's Application class. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${shizukuApplicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="moe.shizuku.manager.ShizukuInitializer"
+                android:value="androidx.startup" />
+        </provider>
     </application>
 
 </manifest>

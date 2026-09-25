@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Standalone Shizuku app shell.
+         All components/permissions come from the :manager library manifest;
+         this manifest only adds what a library manifest must not declare:
+         the Application class and the launcher entry. -->
+    <application
+        android:name="moe.shizuku.manager.ShizukuApplication"
+        android:allowBackup="true"
+        android:autoRevokePermissions="allowed"
+        android:banner="@drawable/ic_launcher"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:directBootAware="true"
+        android:enableOnBackInvokedCallback="true"
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:targetApi="33">
+
+        <activity
+            android:name="moe.shizuku.manager.MainActivity"
+            android:banner="@mipmap/banner"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

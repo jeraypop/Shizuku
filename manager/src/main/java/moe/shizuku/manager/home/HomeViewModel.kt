@@ -45,7 +45,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         // This is fixed by rebooting the device.
         // Run getPermissionGroupInfo() to trigger the exception. Then catch it and show a dialog prompting the user to reboot their device.
         try {
-            val permissionGroup = appContext.packageManager.getPermissionGroupInfo(Manifest.permission_group.API, 0)
+            val permissionGroup = appContext.packageManager.getPermissionGroupInfo(Manifest.permission_group.API(appContext.packageName), 0)
             val permission = appContext.packageManager.getPermissionInfo(Manifest.permission.API_V23, 0)
             if (permission.packageName != appContext.packageName) {
                 _shouldShowUninstallDialog.postValue(true)
