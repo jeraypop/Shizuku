@@ -5,8 +5,8 @@ jdk:
 
 # Toolchain: Gradle 9.5.1 (wrapper) + AGP 9.2.1, both require JDK 17+, hence openjdk21.
 #
-# The Android Gradle plugin downloads the components declared in the root build.gradle
-# (compileSdk 37, NDK 29.0.13113456) on demand. sdkmanager cannot be used for that here:
+# The Android Gradle plugin downloads the components declared in gradle/libs.versions.toml
+# (androidSdkCompile/androidSdkNdk) on demand. sdkmanager cannot be used for that here:
 # the one bundled with the JitPack image crashes on JDK 21
 # (NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema).
 # So the SDK licences have to be pre-accepted by writing the licence hashes directly,

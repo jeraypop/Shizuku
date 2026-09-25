@@ -2,6 +2,12 @@
 # Modules reference entries as libs.<alias>, e.g. implementation libs.androidx.core.ktx
 
 [versions]
+# Android SDK / NDK levels, applied to every module by the root build.gradle.
+androidSdkCompile = "37"
+androidSdkMin = "24"
+androidSdkTarget = "37"
+androidSdkNdk = "29.0.13113456"
+
 agp = "9.2.1"
 kotlin = "2.2.20"
 

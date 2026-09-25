@@ -16,11 +16,12 @@ idea.module {
 subprojects { subproject ->
     plugins.withId("com.android.base") {
         android {
-            compileSdk = 37
-            ndkVersion = "29.0.13113456"
+            // SDK / NDK levels come from gradle/libs.versions.toml ([versions] section).
+            compileSdk = libs.versions.androidSdkCompile.get().toInteger()
+            ndkVersion = libs.versions.androidSdkNdk.get()
             defaultConfig {
-                minSdk = 24
-                targetSdk = 37
+                minSdk = libs.versions.androidSdkMin.get().toInteger()
+                targetSdk = libs.versions.androidSdkTarget.get().toInteger()
             }
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_21
