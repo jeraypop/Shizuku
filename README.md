@@ -104,7 +104,7 @@ The API guide and a demo project are available in the [Shizuku-API](https://gith
 
 ### Building the App
 
-- Clone with `git clone --recurse-submodules`
+- Clone normally (the `api` sources are vendored in this repository, no submodules)
 - Run gradle task `:manager:assembleDebug` or `:manager:assembleRelease`
 
 The `:manager:assembleDebug` task generates a debuggable server. You can attach a debugger to `shizuku_server` to debug the server. In Android Studio, ensure `Run/Debug configurations > Always install with package manager` is checked, so that the server will use the latest code.

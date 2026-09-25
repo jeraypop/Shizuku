@@ -36,7 +36,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.prerelease && 'beta' || 'master' }}
-          submodules: 'recursive'
           fetch-depth: 0
 
       - name: Setup Java
