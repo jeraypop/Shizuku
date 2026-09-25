@@ -2,10 +2,8 @@ import java.nio.file.Paths
 
 plugins {
     id "com.android.library"
-    id "org.jetbrains.kotlin.android"
     id "org.jetbrains.kotlin.plugin.serialization"
     id "dev.rikka.tools.refine"
-    id "dev.rikka.tools.materialthemebuilder"
 }
 
 android {
@@ -38,8 +36,10 @@ android {
             version = "3.22.1+"
         }
     }
-    kotlinOptions {
-        jvmTarget = "21"
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+        }
     }
     packagingOptions {
         jniLibs {
@@ -51,26 +51,11 @@ android {
     }
 }
 
-materialThemeBuilder {
-    themes {
-        shizuku {
-            primaryColor = "#3F51B5"
-            lightThemeFormat = "Theme.Material3Expressive.Light.%s"
-            lightThemeParent = "Theme.Material3Expressive.Light"
-            darkThemeFormat = "Theme.Material3Expressive.Dark.%s"
-            darkThemeParent = "Theme.Material3Expressive.Dark"
-        }
-        dynamic_colors_overlay {
-            dynamicColors = true
-            lightThemeFormat = "ThemeOverlay.Material3.DynamicColors.Light.Shizuku"
-            lightThemeParent = "ThemeOverlay.Material3.DynamicColors.Light"
-            darkThemeFormat = "ThemeOverlay.Material3.DynamicColors.Dark.Shizuku"
-            darkThemeParent = "ThemeOverlay.Material3.DynamicColors.Dark"
-        }
-    }
-    generatePalette = true
-    generateTextColors = true
-}
+// The dev.rikka.tools.materialthemebuilder plugin is incompatible with AGP 9
+// (it still looks up the removed BaseExtension). Its output is now checked in as
+// static resources: res/values/mtb_generated.xml, res/values-v31/mtb_generated.xml
+// and res/color/m3_*.xml. If the primary color (#3F51B5) ever changes, regenerate
+// those files with the plugin on an AGP 8 checkout, or edit them by hand.
 
 afterEvaluate {
     // :shell produces rish_shizuku.dex which the shell task copies into manager assets;

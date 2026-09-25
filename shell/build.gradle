@@ -1,3 +1,5 @@
+import com.android.build.api.artifact.SingleArtifact
+
 plugins {
     id "com.android.application"
     id "dev.rikka.tools.refine"
@@ -31,28 +33,31 @@ android {
     }
 }
 
-android.applicationVariants.all { variant ->
-    variant.outputs.all {
-        def outDir = new File(rootDir, "out")
-        def mappingPath = new File(outDir, "mapping").absolutePath
+// AGP 9 removed the old `applicationVariants` DSL, use androidComponents instead.
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def variantName = variant.name
+        def apkDir = variant.artifacts.get(SingleArtifact.APK.INSTANCE)
+        def mappingFile = variantName == "release" ? variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE.INSTANCE) : null
         def dexPath = "${rootProject.rootDir.path}/manager/src/main/assets"
-        variant.assembleProvider.get().doLast {
-            if (variant.getBuildType().isMinifyEnabled()) {
-                copy {
-                    from variant.mappingFileProvider.get()
-                    into mappingPath
-                    rename { String fileName ->
-                        mappingPath + File.separator + "cmd-v${variant.versionName}.txt"
-                    }
-                }
-            }
-            copy {
-                def file = zipTree(file(outputFile)).matching { include "classes*.dex" }.singleFile
 
-                from file
-                into dexPath
-                rename { String fileName ->
-                    fileName.replace(file.getName(), "rish_shizuku.dex")
+        // Matching (instead of tasks.named) because AGP 9 registers the assemble tasks lazily.
+        tasks.matching { it.name == "assemble${variantName.capitalize()}" }.configureEach {
+            doLast {
+                def apk = fileTree(apkDir.get().asFile).matching { include "*.apk" }.singleFile
+
+                copy {
+                    from zipTree(apk).matching { include "classes*.dex" }.singleFile
+                    into dexPath
+                    rename { "rish_shizuku.dex" }
+                }
+
+                if (mappingFile != null) {
+                    copy {
+                        from mappingFile.get().asFile
+                        into new File(rootDir, "out/mapping")
+                        rename { "cmd-v${rootProject.ext.versionName}.txt" }
+                    }
                 }
             }
         }

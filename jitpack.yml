@@ -3,10 +3,12 @@
 jdk:
   - openjdk21
 
-# No before_install step: the sdkmanager bundled with the JitPack image fails on JDK 21
+# Toolchain: Gradle 9.5.1 (wrapper) + AGP 9.2.1, both require JDK 17+, hence openjdk21.
+#
+# No before_install step: the sdkmanager bundled with the JitPack image crashes on JDK 21
 # (NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema). The Android Gradle plugin
-# downloads the pinned components on demand instead (compileSdk 36 / build-tools 36.0.0 /
-# NDK 29.0.13113456), which is what the root build.gradle declares.
+# downloads the components declared in the root build.gradle (compileSdk 37,
+# NDK 29.0.13113456) on demand instead.
 
 install:
   - ./gradlew publishToMavenLocal --console=plain
