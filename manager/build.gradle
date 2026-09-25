@@ -1,9 +1,9 @@
 import java.nio.file.Paths
 
 plugins {
-    id "com.android.library"
-    id "org.jetbrains.kotlin.plugin.serialization"
-    id "dev.rikka.tools.refine"
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.rikka.refine)
 }
 
 android {
@@ -74,8 +74,8 @@ configurations.configureEach {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+    implementation libs.kotlinx.coroutines.core
+    implementation libs.kotlinx.coroutines.android
 
     // api-scope so that the published POM carries the whole Shizuku runtime
     // (server runs from the host APK via app_process) and host apps only need
@@ -89,43 +89,43 @@ dependencies {
     implementation libs.hidden.compat
     compileOnly libs.hidden.stub
 
-    implementation "androidx.startup:startup-runtime:1.2.0"
-    implementation "androidx.browser:browser:1.8.0"
-    implementation "androidx.core:core-ktx:1.16.0"
-    implementation "androidx.fragment:fragment-ktx:1.8.7"
-    implementation "androidx.recyclerview:recyclerview:1.4.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.9.0"
-    implementation "androidx.preference:preference-ktx:1.2.1"
-    implementation "androidx.work:work-runtime-ktx:2.10.4"
+    implementation libs.androidx.startup.runtime
+    implementation libs.androidx.browser
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.fragment.ktx
+    implementation libs.androidx.recyclerview
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.lifecycle.livedata.ktx
+    implementation libs.androidx.preference.ktx
+    implementation libs.androidx.work.runtime.ktx
 
-    implementation "com.android.tools.build:apksig:8.13.2"
-    implementation "com.google.android.material:material:1.14.0-alpha08"
-    implementation "com.squareup.okhttp3:okhttp:4.12.0"
-    implementation "com.github.topjohnwu.libsu:core:6.0.0"
+    implementation libs.android.tools.apksig
+    implementation libs.google.material
+    implementation libs.okhttp
+    implementation libs.libsu.core
 
-    implementation "dev.rikka.rikkax.appcompat:appcompat:1.6.1"
-    implementation "dev.rikka.rikkax.compatibility:compatibility:2.0.0"
-    implementation "dev.rikka.rikkax.core:core-ktx:1.4.1"
-    implementation "dev.rikka.rikkax.material:material:2.7.2"
-    implementation "dev.rikka.rikkax.material:material-preference:2.0.0"
-    implementation "dev.rikka.rikkax.html:html-ktx:1.1.2"
-    implementation "dev.rikka.rikkax.recyclerview:recyclerview-adapter:1.3.0"
-    implementation "dev.rikka.rikkax.recyclerview:recyclerview-ktx:1.3.2"
-    implementation "dev.rikka.rikkax.insets:insets:1.3.0"
-    implementation "dev.rikka.rikkax.layoutinflater:layoutinflater:1.3.0"
-    implementation "dev.rikka.rikkax.preference:simplemenu-preference:1.0.3"
-    implementation "dev.rikka.rikkax.lifecycle:lifecycle-resource-livedata:1.0.1"
+    implementation libs.rikka.appcompat
+    implementation libs.rikka.compatibility
+    implementation libs.rikka.core.ktx
+    implementation libs.rikka.material
+    implementation libs.rikka.material.preference
+    implementation libs.rikka.html.ktx
+    implementation libs.rikka.recyclerview.adapter
+    implementation libs.rikka.recyclerview.ktx
+    implementation libs.rikka.insets
+    implementation libs.rikka.layoutinflater
+    implementation libs.rikka.simplemenu.preference
+    implementation libs.rikka.lifecycle.resource.livedata
 
-    implementation "io.github.reandroid:ARSCLib:1.3.8"
-    implementation "io.github.vvb2060.ndk:boringssl:20250114"
+    implementation libs.arsclib
+    implementation libs.ndk.boringssl
 
-    implementation "org.bouncycastle:bcpkix-jdk18on:1.80"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0"
-    implementation "org.lsposed.libcxx:libcxx:27.0.12077973"
-    implementation "org.lsposed.hiddenapibypass:hiddenapibypass:6.1"
+    implementation libs.bouncycastle.bcpkix
+    implementation libs.kotlinx.serialization.json
+    implementation libs.libcxx
+    implementation libs.hiddenapibypass
 
-    implementation "me.zhanghai.android.appiconloader:appiconloader:1.5.0"
+    implementation libs.appicon.loader
 }
 
 apply from: rootProject.file("publish.gradle")

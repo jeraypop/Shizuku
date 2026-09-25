@@ -9,7 +9,8 @@
 | 项目 | 要求 | 原因 |
 |---|---|---|
 | minSdk | ≥ 24 | Shizuku 13.7 基线 |
-| compileSdk | 37（建议 36+） | 库以 compileSdk 37 构建 |
+| compileSdk | **37** | 库以 compileSdk 37（AGP 9.2.1）构建，宿主低于 37 可能解析不了库资源 |
+| AGP / Gradle | 建议 AGP 9.x + Gradle 9.x（即 JDK 21） | 库产物由 AGP 9.2.1 产出 |
 | Gradle JDK | 21 | 库字节码 jvmTarget = 21 |
 | 宿主包名 | **不能含 `-`** | server 从 `/data/app/<包名>-<hash>/` 按 `-` 切分解析包名 |
 | 仓库 | `mavenCentral()` + `maven { url 'https://jitpack.io' }`（未发布时改用 `mavenLocal()`） | jitpack 拿本库 + libsu |
@@ -47,7 +48,7 @@ android {
 
 dependencies {
     // Shizuku 管理器库（POM 自带 server/starter/rish/api/provider 全链传递依赖）
-    implementation "com.github.jeraypop.Shizuku:manager:13.7.0-jeraypop"
+    implementation "com.github.jeraypop.Shizuku:manager:1.0.3"
 
     // ★ 仅当宿主开 minifyEnabled（R8）时需要：hidden API 桩，编译期存在、不进 APK
     //   不加的话 R8 会报 Missing class android.os.ServiceManager 等约 30 个类
@@ -78,17 +79,21 @@ android {
 }
 
 dependencies {
-    implementation("com.github.jeraypop.Shizuku:manager:13.7.0-jeraypop")
+    implementation("com.github.jeraypop.Shizuku:manager:1.0.3")
     compileOnly("dev.rikka.hidden:stub:4.4.0")
     implementation("dev.rikka.shizuku:api:13.1.5")
     implementation("dev.rikka.shizuku:provider:13.1.5")
 }
 ```
 
-> **JitPack 未发布前的本地验证**（当前状态：`13.7.0-jeraypop` 尚未 push tag，JitPack 上还取不到）：
-> 在本仓库跑 `./gradlew publishToMavenLocal`，宿主 `settings.gradle` 仓库里加 `mavenLocal()`，
-> 坐标不变（同组 `com.github.jeraypop.Shizuku`）。发布流程：commit → `git tag 13.7.0-jeraypop`
-> → `git push && git push --tags` → 等 JitPack 构建完成后换成 jitpack.io 仓库即可。
+> **版本号说明**：JitPack 的版本取自 git tag；当前仓库还没打 tag，JitPack 用 `git describe`
+> 得到的是上游遗留的 `1.0.3`，所以**现在可用的坐标是 `...:manager:1.0.3`**（已在 jitpack.io 上
+> 验证产物齐全：`manager-1.0.3.aar` + pom + module）。想换成语义化版本就打 tag：
+> `git tag 13.7.0-jeraypop && git push --tags`，构建通过后坐标变成
+> `com.github.jeraypop.Shizuku:manager:13.7.0-jeraypop`。
+>
+> **离线自测**：在本仓库跑 `./gradlew publishToMavenLocal`，宿主 `settings.gradle` 仓库里加
+> `mavenLocal()`，坐标不变（同组 `com.github.jeraypop.Shizuku`）。
 
 ---
 

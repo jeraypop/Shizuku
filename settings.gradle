@@ -7,16 +7,8 @@ pluginManagement {
             url = "https://plugins.gradle.org/m2/"
         }
     }
-    plugins {
-        id "com.android.application" version "9.2.1"
-        id "com.android.library" version "9.2.1"
-        // AGP 9 ships Kotlin support built in: applying org.jetbrains.kotlin.android
-        // now conflicts ("Cannot add extension with name 'kotlin'").
-        id "org.jetbrains.kotlin.plugin.serialization" version "2.2.20"
-        id "dev.rikka.tools.autoresconfig" version "1.2.2"
-        id "dev.rikka.tools.materialthemebuilder" version "1.5.1"
-        id "dev.rikka.tools.refine" version "4.4.0"
-    }
+    // Plugin versions are declared in the root build.gradle via the version catalog
+    // (gradle/libs.versions.toml): the settings pluginManagement block cannot see it.
 
 }
 dependencyResolutionManagement {
