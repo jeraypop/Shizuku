@@ -245,6 +245,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <!--为了防止 从shizuku-api切换到本库时，没有及时移出对应的provider导致的连不上 -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             tools:node="remove" />
