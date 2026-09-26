@@ -237,7 +237,7 @@
         <receiver android:name=".receiver.NotifRestoreReceiver" />
 
         <provider
-            android:name="androidx.core.content.FileProvider"
+            android:name=".SZKFileProvider"
             android:authorities="${shizukuApplicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
