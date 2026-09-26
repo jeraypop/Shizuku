@@ -47,16 +47,17 @@ android {
 }
 
 dependencies {
-    // Shizuku 管理器库（POM 自带 server/starter/rish/api/provider 全链传递依赖）
+    // Shizuku 管理器库（POM 自带 server/starter/rish/api/provider/aidl/shared/common 全链传递依赖）
     implementation "com.github.jeraypop.Shizuku:manager:1.0.3"
 
     // ★ 仅当宿主开 minifyEnabled（R8）时需要：hidden API 桩，编译期存在、不进 APK
     //   不加的话 R8 会报 Missing class android.os.ServiceManager 等约 30 个类
     compileOnly "dev.rikka.hidden:stub:4.4.0"
 
-    // （可选）宿主自己要"使用" Shizuku 跑特权代码时才需要——见第 4 节
-    implementation "dev.rikka.shizuku:api:13.1.5"
-    implementation "dev.rikka.shizuku:provider:13.1.5"
+    // ⛔ 禁止再引入任何 dev.rikka.shizuku:* 官方依赖（api/provider/aidl/shared 都不行）：
+    //   fork 版与官方类的包名/命名空间完全相同，两套同 APK = namespace 冲突 + duplicate class，
+    //   而且排掉 fork 侧后 server 会因缺类秒死（server 只在 fork 的 common/aidl 里有完整依赖）。
+    //   宿主自己调用 Shizuku API 直接用 fork 传递进来的 rikka.shizuku.Shizuku 即可（13.7）。
 }
 ```
 
@@ -81,8 +82,7 @@ android {
 dependencies {
     implementation("com.github.jeraypop.Shizuku:manager:1.0.3")
     compileOnly("dev.rikka.hidden:stub:4.4.0")
-    implementation("dev.rikka.shizuku:api:13.1.5")
-    implementation("dev.rikka.shizuku:provider:13.1.5")
+    // ⛔ 不要加 dev.rikka.shizuku:api / provider —— 与 fork 全链同名冲突，见上
 }
 ```
 
@@ -153,7 +153,8 @@ ShizukuControl.stop(context)    // 停止 server
 ## 4. 宿主自己"使用" Shizuku（可选）
 
 宿主集成库后已自动持有 `moe.shizuku.manager.permission.API_V23` 权限声明，
-自己的进程就是 manager 进程，调用 Shizuku API 与普通第三方完全一致：
+自己的进程就是 manager 进程，调用 Shizuku API 与普通第三方完全一致。
+**不要加官方依赖**，fork 的 `rikka.shizuku.Shizuku`（13.7）随 manager 传递进来，直接 import 用：
 
 ```kotlin
 if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
@@ -163,19 +164,21 @@ if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
 }
 ```
 
-第三方 App 接入你的 Shizuku：用官方 `dev.rikka.shizuku:api:13.1.5`，
+第三方 App 接入你的 Shizuku：**它们是独立 APK**，用官方 `dev.rikka.shizuku:api:13.1.5`
 标准写法零改动（binder 由 server 主动推送，客户端无需感知宿主包名）。
+"官方 api 只进第三方 APK、不进宿主 APK"——这正是两套不打架的前提。
 
 ---
 
 ## 5. 硬性约束与已知坑（务必通读）
 
 1. **包名不能含 `-`** —— server 启动时从 CLASSPATH 目录名解析宿主包名，含 `-` 会导致解析失败。
-2. **不要 remove `InitializationProvider`** —— 见第 2 节。
-3. **R8 missing classes** —— 开混淆必须加 `compileOnly "dev.rikka.hidden:stub:4.4.0"`（库的 consumer-rules.pro 已自动带入 keep 规则：server/starter/shell 的 main 入口、Parcelable CREATOR、native 方法等）。
-4. **与独立 Shizuku App 无法共存（签名不同时）** —— `moe.shizuku.manager.permission.API_V23` 是公共 API 固定名，全设备只能声明一次；宿主与独立 App 签名不同时，装第二个会被 `INSTALL_FAILED_DUPLICATE_PERMISSION` 拒绝。要共存必须统一 keystore。
-5. **Android Studio Run 安装失败 `INSTALL_FAILED_TEST_ONLY`** —— Studio 会给 Run 产物注入 `android:testOnly`；根治：gradle.properties 加 `android.injected.testOnly=false`（本仓库已加，宿主项目建议也加）。
-6. **权限组已按包名参数化** —— permission-group 为 `<宿主包名>.permission-group.API`，多 App 各自独立，互不抢占。
+2. **⛔ 宿主不许引入任何 `dev.rikka.shizuku:*` 官方 artifact（api/provider/aidl/shared）** —— fork 与官方类同名同命名空间，两套共存 = namespace 冲突 + 35 个 duplicate class；单独排 fork 侧更糟：server 会因缺 `moe.shizuku.common.*`/`aidl` 类在启动瞬间死掉，表现为「starter 正常、server pid 有值、进程随即消失、永远收不到 binder」。宿主工程里所有模块（含自己的库）都不要出现 `dev.rikka.shizuku`，全局搜一遍。
+3. **不要 remove `InitializationProvider`** —— 见第 2 节。
+4. **R8 missing classes** —— 开混淆必须加 `compileOnly "dev.rikka.hidden:stub:4.4.0"`（库的 consumer-rules.pro 已自动带入 keep 规则：server/starter/shell 的 main 入口、Parcelable CREATOR、native 方法等）。
+5. **与独立 Shizuku App 无法共存（签名不同时）** —— `moe.shizuku.manager.permission.API_V23` 是公共 API 固定名，全设备只能声明一次；宿主与独立 App 签名不同时，装第二个会被 `INSTALL_FAILED_DUPLICATE_PERMISSION` 拒绝。要共存必须统一 keystore。
+6. **Android Studio Run 安装失败 `INSTALL_FAILED_TEST_ONLY`** —— Studio 会给 Run 产物注入 `android:testOnly`；根治：gradle.properties 加 `android.injected.testOnly=false`（本仓库已加，宿主项目建议也加）。
+7. **权限组已按包名参数化** —— permission-group 为 `<宿主包名>.permission-group.API`，多 App 各自独立，互不抢占。
 
 ---
 
