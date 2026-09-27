@@ -110,7 +110,7 @@ fun createStubApk(pkgName: String): File {
         }
     val appIcon =
         packageBlock.getOrCreate("", "drawable", "ic_launcher").apply {
-            setValueAsReference(R.drawable.ic_launcher)
+            setValueAsReference(R.drawable.shizuku_ic_launcher)
         }
 
     Log.i(TAG, "Creating manifest")
