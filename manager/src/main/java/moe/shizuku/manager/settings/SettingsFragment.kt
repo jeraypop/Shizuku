@@ -302,7 +302,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         if (isStandaloneBuild) {
             translationPreference.apply {
-                summary = context.getString(R.string.settings_translation_summary, context.getString(R.string.app_name))
+                summary = context.getString(R.string.settings_translation_summary, context.getString(R.string.shizuku_app_name))
                 setOnPreferenceClickListener {
                     CustomTabsHelper.launchUrlOrCopy(context, context.getString(R.string.translation_url))
                     true

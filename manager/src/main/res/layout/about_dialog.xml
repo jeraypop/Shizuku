@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:text="@string/app_name"
+        android:text="@string/shizuku_app_name"
         android:textAppearance="@android:style/TextAppearance.Material.Body1"
         android:textSize="18sp"
         app:layout_constraintTop_toTopOf="parent"
