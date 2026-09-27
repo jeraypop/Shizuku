@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Card.Large"
+    style="@style/Shizuku.Card.Large"
     android:background="?colorErrorContainer">
 
     <LinearLayout
@@ -13,7 +13,7 @@
 
         <ImageView
             android:id="@android:id/icon"
-            style="@style/CardIcon"
+            style="@style/Shizuku.CardIcon"
             android:backgroundTint="?colorOnErrorContainer"
             android:duplicateParentState="true"
             android:importantForAccessibility="no"
@@ -29,7 +29,7 @@
 
             <TextView
                 android:id="@android:id/title"
-                style="@style/CardTitle"
+                style="@style/Shizuku.CardTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:duplicateParentState="true"
@@ -42,7 +42,7 @@
 
     <TextView
         android:id="@android:id/text1"
-        style="@style/CardSummary"
+        style="@style/Shizuku.CardSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/home_adb_is_limited_description"
@@ -50,7 +50,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@android:id/button1"
-        style="@style/CardButton"
+        style="@style/Shizuku.CardButton"
         android:text="@string/home_adb_button_view_help"
         android:textColor="?colorOnError"
         app:backgroundTint="?colorError"

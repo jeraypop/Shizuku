@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Card.Large">
+    style="@style/Shizuku.Card.Large">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,13 +11,13 @@
 
         <ImageView
             android:id="@android:id/icon"
-            style="@style/CardIcon"
+            style="@style/Shizuku.CardIcon"
             android:duplicateParentState="true"
             android:importantForAccessibility="no"
             android:src="@drawable/ic_visibility_off_outline_24" />
 
         <TextView
-            style="@style/CardTitle"
+            style="@style/Shizuku.CardTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/home_icon_padding"
@@ -27,7 +27,7 @@
     </LinearLayout>
 
     <TextView
-        style="@style/CardSummary"
+        style="@style/Shizuku.CardSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:duplicateParentState="true"

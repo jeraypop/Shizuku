@@ -85,30 +85,30 @@
             android:name=".MainActivity"
             android:banner="@mipmap/banner"
             android:exported="true"
-            android:theme="@style/AppTheme">
+            android:theme="@style/Shizuku.AppTheme">
         </activity>
         <activity
             android:name=".management.ApplicationManagementActivity"
             android:label="@string/home_app_management_title"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/Shizuku.AppTheme" />
         <activity
             android:name=".adb.AdbPairingTutorialActivity"
             android:label="@string/adb_pairing"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/Shizuku.AppTheme" />
         <activity
             android:name=".shell.ShellTutorialActivity"
             android:label="@string/home_terminal_title"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/Shizuku.AppTheme" />
         <activity
             android:name=".stealth.StealthTutorialActivity"
             android:label="@string/home_stealth_title"
-            android:theme="@style/AppTheme"
+            android:theme="@style/Shizuku.AppTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".settings.SettingsActivity"
             android:exported="false"
             android:label="@string/settings_title"
-            android:theme="@style/AppTheme">
+            android:theme="@style/Shizuku.AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
             </intent-filter>
@@ -116,10 +116,10 @@
         <activity
             android:name=".starter.StarterActivity"
             android:label="@string/starter"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/Shizuku.AppTheme" />
         <activity
             android:name=".settings.BugReportDialogActivity"
-            android:theme="@style/Theme.App.DialogHost"
+            android:theme="@style/Shizuku.Theme.App.DialogHost"
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
@@ -130,7 +130,7 @@
             android:excludeFromRecents="true"
             android:exported="true"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"
-            android:theme="@style/GrantPermissions">
+            android:theme="@style/Shizuku.GrantPermissions">
             <intent-filter>
                 <action android:name="${shizukuApplicationId}.intent.action.REQUEST_PERMISSION" />
 
@@ -142,7 +142,7 @@
             android:directBootAware="true"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:theme="@style/GrantPermissions">
+            android:theme="@style/Shizuku.GrantPermissions">
             <intent-filter>
                 <action android:name="rikka.shizuku.intent.action.REQUEST_BINDER" />
 
@@ -154,7 +154,7 @@
             android:excludeFromRecents="true"
             android:exported="true"
             android:permission="moe.shizuku.manager.permission.API"
-            android:theme="@style/GrantPermissions">
+            android:theme="@style/Shizuku.GrantPermissions">
             <intent-filter>
                 <action android:name="${shizukuApplicationId}.intent.action.REQUEST_AUTHORIZATION" />
 

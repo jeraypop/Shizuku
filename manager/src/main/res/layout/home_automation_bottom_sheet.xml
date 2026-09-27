@@ -47,7 +47,7 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/StaticCopyTextInput"
+            style="@style/Shizuku.StaticCopyTextInput"
             android:id="@+id/actionLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,7 +63,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/StaticCopyTextInput"
+            style="@style/Shizuku.StaticCopyTextInput"
             android:id="@+id/packageLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/StaticCopyTextInput"
+            style="@style/Shizuku.StaticCopyTextInput"
             android:id="@+id/targetLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/StaticCopyTextInput"
+            style="@style/Shizuku.StaticCopyTextInput"
             android:id="@+id/extrasLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

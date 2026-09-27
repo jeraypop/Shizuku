@@ -28,7 +28,7 @@
             android:divider="@drawable/spacing_card_vertical">
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/DialogCard"
+                style="@style/Shizuku.DialogCard"
                 android:id="@+id/compatibilityCard"
                 app:cardBackgroundColor="?colorErrorContainer">
 
@@ -49,7 +49,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        style="@style/TerminalTutorialText"
+                        style="@style/Shizuku.TerminalTutorialText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/stealth_warning_compatibility"
@@ -58,7 +58,7 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        style="@style/TerminalTutorialText"
+                        style="@style/Shizuku.TerminalTutorialText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
@@ -67,7 +67,7 @@
                         android:textColor="?colorOnErrorContainer" />
 
                     <TextView
-                        style="@style/TerminalTutorialText"
+                        style="@style/Shizuku.TerminalTutorialText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
@@ -80,7 +80,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/DialogCard"
+                style="@style/Shizuku.DialogCard"
                 app:cardBackgroundColor="?colorErrorContainer">
 
                 <ImageView
@@ -94,7 +94,7 @@
                     android:tintMode="src_in" />
 
                 <TextView
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="36dp"
@@ -107,7 +107,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/DialogCard">
+                style="@style/Shizuku.DialogCard">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -126,7 +126,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        style="@style/TerminalTutorialText"
+                        style="@style/Shizuku.TerminalTutorialText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/stealth_info_reconfigure"
@@ -135,7 +135,7 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        style="@style/TerminalTutorialText"
+                        style="@style/Shizuku.TerminalTutorialText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
@@ -144,7 +144,7 @@
                         android:textColor="?colorOnSecondaryContainer" />
 
                     <TextView
-                        style="@style/TerminalTutorialText"
+                        style="@style/Shizuku.TerminalTutorialText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
@@ -157,7 +157,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/DialogCard">
+                style="@style/Shizuku.DialogCard">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -170,7 +170,7 @@
                     android:tintMode="src_in" />
 
                 <TextView
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="36dp"

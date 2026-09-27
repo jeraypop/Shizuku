@@ -20,7 +20,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@android:id/button2"
-            style="@style/DialogCard">
+            style="@style/Shizuku.DialogCard">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -34,7 +34,7 @@
 
             <TextView
                 android:id="@android:id/summary"
-                style="@style/TerminalTutorialText"
+                style="@style/Shizuku.TerminalTutorialText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="36dp"
@@ -46,7 +46,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/miui"
-            style="@style/DialogCard"
+            style="@style/Shizuku.DialogCard"
             android:layout_marginTop="8dp"
             android:visibility="gone"
             app:cardBackgroundColor="?colorErrorContainer"
@@ -70,7 +70,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:duplicateParentState="true"
@@ -79,7 +79,7 @@
                     android:textColor="?colorOnErrorContainer" />
 
                 <TextView
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -121,14 +121,14 @@
 
                 <TextView
                     android:id="@+id/text1"
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     tools:text="@string/terminal_tutorial_1" />
 
                 <TextView
                     android:id="@+id/summary1"
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8sp"
@@ -172,14 +172,14 @@
 
                 <TextView
                     android:id="@+id/text2"
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     tools:text="@string/terminal_tutorial_2" />
 
                 <TextView
                     android:id="@+id/command2"
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8sp"
@@ -190,7 +190,7 @@
 
                 <TextView
                     android:id="@+id/summary2"
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8sp"
@@ -226,14 +226,14 @@
 
                 <TextView
                     android:id="@+id/text3"
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     tools:text="@string/terminal_tutorial_3" />
 
                 <TextView
                     android:id="@+id/command3"
-                    style="@style/TerminalTutorialText"
+                    style="@style/Shizuku.TerminalTutorialText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8sp"

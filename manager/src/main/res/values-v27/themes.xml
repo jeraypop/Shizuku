@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Light" parent="Base.AppTheme.Light">
+    <style name="Shizuku.Theme.Light" parent="Shizuku.Base.AppTheme.Light">
         <item name="android:navigationBarColor">#B3FFFFFF</item>
         <item name="android:windowLightNavigationBar">true</item>
     </style>
 
-    <style name="Theme" parent="Base.AppTheme">
+    <style name="Shizuku.Theme" parent="Shizuku.Base.AppTheme">
         <item name="android:navigationBarColor">#B3000000</item>
         <item name="android:windowLightNavigationBar">false</item>
     </style>

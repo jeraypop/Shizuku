@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Card.Large">
+    style="@style/Shizuku.Card.Large">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,13 +13,13 @@
 
         <ImageView
             android:id="@android:id/icon"
-            style="@style/CardIcon"
+            style="@style/Shizuku.CardIcon"
             android:duplicateParentState="true"
             android:importantForAccessibility="no"
             android:src="@drawable/ic_integration_instructions_24" />
 
         <TextView
-            style="@style/CardTitle"
+            style="@style/Shizuku.CardTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/home_icon_padding"
@@ -30,14 +30,14 @@
 
     <TextView
         android:id="@android:id/text1"
-        style="@style/CardSummary"
+        style="@style/Shizuku.CardSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/home_automation_description" />
 
     <TextView
         android:id="@android:id/text2"
-        style="@style/CardSummary"
+        style="@style/Shizuku.CardSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -45,7 +45,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@android:id/button1"
-        style="@style/CardButton"
+        style="@style/Shizuku.CardButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/home_automation_button_view_intents"

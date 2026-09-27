@@ -3,11 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Card.Small">
+    style="@style/Shizuku.Card.Small">
 
     <ImageView
         android:id="@android:id/icon"
-        style="@style/CardIcon"
+        style="@style/Shizuku.CardIcon"
         android:duplicateParentState="true"
         android:importantForAccessibility="no"
         android:src="@drawable/ic_terminal_24" />
@@ -21,7 +21,7 @@
 
         <TextView
             android:id="@android:id/text1"
-            style="@style/CardTitle"
+            style="@style/Shizuku.CardTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:duplicateParentState="true"
@@ -29,7 +29,7 @@
 
         <TextView
             android:id="@android:id/text2"
-            style="@style/CardSummary.Brief"
+            style="@style/Shizuku.CardSummary.Brief"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:duplicateParentState="true"

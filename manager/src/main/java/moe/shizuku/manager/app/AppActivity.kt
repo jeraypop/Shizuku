@@ -19,9 +19,9 @@ abstract class AppActivity : MaterialActivity() {
     override fun onApplyUserThemeResource(theme: Theme, isDecorView: Boolean) {
         if (ThemeHelper.isUsingSystemColor()) {
             if (resources.configuration.isNight())
-                theme.applyStyle(R.style.ThemeOverlay_DynamicColors_Dark, true)
+                theme.applyStyle(R.style.Shizuku_ThemeOverlay_DynamicColors_Dark, true)
             else
-                theme.applyStyle(R.style.ThemeOverlay_DynamicColors_Light, true)
+                theme.applyStyle(R.style.Shizuku_ThemeOverlay_DynamicColors_Light, true)
         }
 
         theme.applyStyle(ThemeHelper.getThemeStyleRes(this), true)

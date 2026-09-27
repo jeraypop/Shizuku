@@ -39,10 +39,10 @@ public class ThemeHelper {
     public static int getThemeStyleRes(Context context) {
         switch (getTheme(context)) {
             case THEME_BLACK:
-                return R.style.ThemeOverlay_Black;
+                return R.style.Shizuku_ThemeOverlay_Black;
             case THEME_DEFAULT:
             default:
-                return R.style.ThemeOverlay;
+                return R.style.Shizuku_ThemeOverlay;
         }
     }
 

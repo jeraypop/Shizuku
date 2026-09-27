@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Base.AppTheme.Light" parent="Theme.Material3Expressive.Light.Shizuku">
+    <style name="Shizuku.Base.AppTheme.Light" parent="Theme.Material3Expressive.Light.Shizuku">
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
@@ -9,7 +9,7 @@
 
         <item name="android:forceDarkAllowed">false</item>
 
-        <item name="preferenceTheme">@style/AppTheme.PreferenceThemeOverlay</item>
+        <item name="preferenceTheme">@style/Shizuku.AppTheme.PreferenceThemeOverlay</item>
 
         <item name="appColorPrimary">@color/app_color_light</item>
 
@@ -19,9 +19,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.Light" parent="Base.AppTheme.Light" />
+    <style name="Shizuku.Theme.Light" parent="Shizuku.Base.AppTheme.Light" />
 
-    <style name="Base.AppTheme" parent="Theme.Material3Expressive.Dark.Shizuku">
+    <style name="Shizuku.Base.AppTheme" parent="Theme.Material3Expressive.Dark.Shizuku">
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
@@ -29,7 +29,7 @@
 
         <item name="android:forceDarkAllowed">false</item>
 
-        <item name="preferenceTheme">@style/AppTheme.PreferenceThemeOverlay</item>
+        <item name="preferenceTheme">@style/Shizuku.AppTheme.PreferenceThemeOverlay</item>
         
         <item name="appColorPrimary">@color/app_color_dark</item>
 
@@ -39,9 +39,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme" parent="Base.AppTheme" />
+    <style name="Shizuku.Theme" parent="Shizuku.Base.AppTheme" />
 
-    <style name="AppTheme.PreferenceThemeOverlay" parent="@style/PreferenceThemeOverlay.Rikka.Material3">
+    <style name="Shizuku.AppTheme.PreferenceThemeOverlay" parent="@style/PreferenceThemeOverlay.Rikka.Material3">
         <item name="switchPreferenceCompatStyle">@style/Preference.Rikka.MateriaSwitchPreference</item>
     </style>
 

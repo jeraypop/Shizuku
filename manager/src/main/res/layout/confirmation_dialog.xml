@@ -28,12 +28,12 @@
 
     <TextView
         android:id="@android:id/button1"
-        style="@style/GrantPermissionsButtons.Top"
+        style="@style/Shizuku.GrantPermissionsButtons.Top"
         android:text="@string/grant_dialog_button_allow_always" />
 
     <TextView
         android:id="@android:id/button3"
-        style="@style/GrantPermissionsButtons.Bottom"
+        style="@style/Shizuku.GrantPermissionsButtons.Bottom"
         android:text="@string/grant_dialog_button_deny" />
 
 </LinearLayout>
