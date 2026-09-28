@@ -130,7 +130,8 @@
             android:excludeFromRecents="true"
             android:exported="true"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"
-            android:theme="@style/Shizuku.GrantPermissions">
+            android:theme="@style/Shizuku.GrantPermissions"
+            android:taskAffinity="">
             <intent-filter>
                 <action android:name="${shizukuApplicationId}.intent.action.REQUEST_PERMISSION" />
 
@@ -142,7 +143,8 @@
             android:directBootAware="true"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:theme="@style/Shizuku.GrantPermissions">
+            android:theme="@style/Shizuku.GrantPermissions"
+            android:taskAffinity="">
             <intent-filter>
                 <action android:name="rikka.shizuku.intent.action.REQUEST_BINDER" />
 
@@ -154,7 +156,8 @@
             android:excludeFromRecents="true"
             android:exported="true"
             android:permission="moe.shizuku.manager.permission.API"
-            android:theme="@style/Shizuku.GrantPermissions">
+            android:theme="@style/Shizuku.GrantPermissions"
+            android:taskAffinity="">
             <intent-filter>
                 <action android:name="${shizukuApplicationId}.intent.action.REQUEST_AUTHORIZATION" />
 
