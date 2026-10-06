@@ -10,18 +10,6 @@ pluginManagement {
     // Plugin versions are declared in the root build.gradle via the version catalog
     // (gradle/libs.versions.toml): the settings pluginManagement block cannot see it.
 
-    resolutionStrategy {
-        eachPlugin {
-            // JitPack's container intermittently fails to resolve Kotlin plugin
-            // markers (org.jetbrains.kotlin.plugin.*.gradle.plugin) from the
-            // Gradle Plugin Portal. JetBrains also publishes the same-version
-            // plugin artifacts to Maven Central, so map the marker straight to
-            // the module and let normal dependency resolution handle it.
-            if (requested.id.id == "org.jetbrains.kotlin.plugin.serialization") {
-                useModule("org.jetbrains.kotlin:kotlin-serialization:${requested.version}")
-            }
-        }
-    }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
