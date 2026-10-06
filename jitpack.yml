@@ -19,6 +19,10 @@ before_install:
   - curl -s -o /dev/null -w "repo1.maven.org (mavenCentral): %{http_code} in %{time_total}s\n" --max-time 20 "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-serialization/2.2.20/kotlin-serialization-2.2.20.pom"
   - curl -s -o /dev/null -w "plugins.gradle.org (portal): %{http_code} in %{time_total}s\n" --max-time 20 "https://plugins.gradle.org/m2/org/jetbrains/kotlin/plugin/serialization/org.jetbrains.kotlin.plugin.serialization.gradle.plugin/2.2.20/org.jetbrains.kotlin.plugin.serialization.gradle.plugin-2.2.20.pom"
   - curl -s -o /dev/null -w "dl.google.com (google maven): %{http_code} in %{time_total}s\n" --max-time 20 "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.2.1/gradle-9.2.1.pom"
+  # JitPack's clone intermittently delivers a truncated/corrupt gradle-wrapper.jar
+  # ("An unexpected error occurred while trying to open file ..."). Detect that and
+  # re-download the official wrapper jar for the pinned Gradle version as a fallback.
+  - wrapperJar="gradle/wrapper/gradle-wrapper.jar" && (unzip -tqq "$wrapperJar" >/dev/null 2>&1 && echo "wrapper jar OK") || { echo "wrapper jar corrupt, downloading official v9.5.1 wrapper jar"; curl -fsSL -o "$wrapperJar" "https://raw.githubusercontent.com/gradle/gradle/v9.5.1/gradle/wrapper/gradle-wrapper.jar" && unzip -tqq "$wrapperJar" >/dev/null 2>&1 && echo "wrapper jar replaced OK"; }
 
 install:
   - ./gradlew publishToMavenLocal --console=plain --info
