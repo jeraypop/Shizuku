@@ -5,24 +5,17 @@ jdk:
 
 # Toolchain: Gradle 9.5.1 (wrapper) + AGP 9.2.1, both require JDK 17+, hence openjdk21.
 #
-# The Android Gradle plugin downloads the components declared in gradle/libs.versions.toml
-# (androidSdkCompile/androidSdkNdk) on demand. sdkmanager cannot be used for that here:
+# NOTE: everything critical lives in `install` (not `before_install`) - JitPack has
+# intermittently skipped before_install entirely for this repo (builds since
+# 2026-10-06T05:56Z), and its clone sometimes delivers a truncated/corrupt
+# gradle-wrapper.jar ("An unexpected error occurred while trying to open file ...").
+#
+# sdkmanager cannot be used for the SDK components declared in libs.versions.toml:
 # the one bundled with the JitPack image crashes on JDK 21
-# (NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema).
-# So the SDK licences have to be pre-accepted by writing the licence hashes directly,
-# otherwise AGP aborts with LicenceNotAcceptedException for ndk;29.0.13113456.
-before_install:
-  - export SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android-sdk-linux}}" && mkdir -p "$SDK/licenses" && printf '\nd56f5187479451eabf01fb78af6dfcb131a6481e\n8933bad161af4178b1185d1a37fbf41ea5269c55\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n' > "$SDK/licenses/android-sdk-license" && printf '\n84831b9409646a918e30573bab4c9c91346d8abd\n' > "$SDK/licenses/android-sdk-preview-license" && ls "$SDK/licenses"
-  # Connectivity diagnostics: Gradle reports plain "could not resolve" both for
-  # genuine 404s and for network failures, which hides the real cause. Probe the
-  # three plugin/maven sources directly so the build.log shows which are broken.
-  - curl -s -o /dev/null -w "repo1.maven.org (mavenCentral): %{http_code} in %{time_total}s\n" --max-time 20 "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-serialization/2.2.20/kotlin-serialization-2.2.20.pom"
-  - curl -s -o /dev/null -w "plugins.gradle.org (portal): %{http_code} in %{time_total}s\n" --max-time 20 "https://plugins.gradle.org/m2/org/jetbrains/kotlin/plugin/serialization/org.jetbrains.kotlin.plugin.serialization.gradle.plugin/2.2.20/org.jetbrains.kotlin.plugin.serialization.gradle.plugin-2.2.20.pom"
-  - curl -s -o /dev/null -w "dl.google.com (google maven): %{http_code} in %{time_total}s\n" --max-time 20 "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.2.1/gradle-9.2.1.pom"
-  # JitPack's clone intermittently delivers a truncated/corrupt gradle-wrapper.jar
-  # ("An unexpected error occurred while trying to open file ..."). Detect that and
-  # re-download the official wrapper jar for the pinned Gradle version as a fallback.
-  - wrapperJar="gradle/wrapper/gradle-wrapper.jar" && (unzip -tqq "$wrapperJar" >/dev/null 2>&1 && echo "wrapper jar OK") || { echo "wrapper jar corrupt, downloading official v9.5.1 wrapper jar"; curl -fsSL -o "$wrapperJar" "https://raw.githubusercontent.com/gradle/gradle/v9.5.1/gradle/wrapper/gradle-wrapper.jar" && unzip -tqq "$wrapperJar" >/dev/null 2>&1 && echo "wrapper jar replaced OK"; }
-
+# (NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema). So the SDK licences
+# are pre-accepted by writing the licence hashes directly, otherwise AGP aborts
+# with LicenceNotAcceptedException for ndk;29.0.13113456.
 install:
-  - ./gradlew publishToMavenLocal --console=plain --info
+  - export SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android-sdk-linux}}" && mkdir -p "$SDK/licenses" && printf '\nd56f5187479451eabf01fb78af6dfcb131a6481e\n8933bad161af4178b1185d1a37fbf41ea5269c55\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n' > "$SDK/licenses/android-sdk-license" && printf '\n84831b9409646a918e30573bab4c9c91346d8abd\n' > "$SDK/licenses/android-sdk-preview-license" && ls "$SDK/licenses"
+  - curl -fsSL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v9.5.1/gradle/wrapper/gradle-wrapper.jar" && unzip -tqq gradle/wrapper/gradle-wrapper.jar && echo "wrapper jar replaced with official v9.5.1 jar"
+  - ./gradlew publishToMavenLocal --console=plain
