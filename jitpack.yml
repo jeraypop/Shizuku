@@ -13,6 +13,12 @@ jdk:
 # otherwise AGP aborts with LicenceNotAcceptedException for ndk;29.0.13113456.
 before_install:
   - export SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android-sdk-linux}}" && mkdir -p "$SDK/licenses" && printf '\nd56f5187479451eabf01fb78af6dfcb131a6481e\n8933bad161af4178b1185d1a37fbf41ea5269c55\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n' > "$SDK/licenses/android-sdk-license" && printf '\n84831b9409646a918e30573bab4c9c91346d8abd\n' > "$SDK/licenses/android-sdk-preview-license" && ls "$SDK/licenses"
+  # Connectivity diagnostics: Gradle reports plain "could not resolve" both for
+  # genuine 404s and for network failures, which hides the real cause. Probe the
+  # three plugin/maven sources directly so the build.log shows which are broken.
+  - curl -s -o /dev/null -w "repo1.maven.org (mavenCentral): %{http_code} in %{time_total}s\n" --max-time 20 "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-serialization/2.2.20/kotlin-serialization-2.2.20.pom"
+  - curl -s -o /dev/null -w "plugins.gradle.org (portal): %{http_code} in %{time_total}s\n" --max-time 20 "https://plugins.gradle.org/m2/org/jetbrains/kotlin/plugin/serialization/org.jetbrains.kotlin.plugin.serialization.gradle.plugin/2.2.20/org.jetbrains.kotlin.plugin.serialization.gradle.plugin-2.2.20.pom"
+  - curl -s -o /dev/null -w "dl.google.com (google maven): %{http_code} in %{time_total}s\n" --max-time 20 "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.2.1/gradle-9.2.1.pom"
 
 install:
-  - ./gradlew publishToMavenLocal --console=plain
+  - ./gradlew publishToMavenLocal --console=plain --info
