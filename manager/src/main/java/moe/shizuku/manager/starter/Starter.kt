@@ -17,7 +17,10 @@ object Starter {
 
     val userCommand: String = starterFile.absolutePath
     val adbCommand = "adb shell $userCommand"
-    val internalCommand = "$userCommand --apk=${app.applicationInfo.sourceDir}"
+    // --manager is required: when the server runs from the stand-alone dex (shipped as
+    // libshizuku_server.so next to this executable) it can no longer derive the package
+    // name from the CLASSPATH's parent directory.
+    val internalCommand = "$userCommand --apk=${app.applicationInfo.sourceDir} --manager=${app.packageName}"
 
     val serviceStartedMessage = "Service started, this window will be automatically closed in 3 seconds"
 

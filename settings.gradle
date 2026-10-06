@@ -27,6 +27,9 @@ dependencyResolutionManagement {
 }
 
 include ":server", ":starter", ":shell", ":manager", ":common", ":app"
+// Build-time only module: emits the stand-alone server dex that :manager repackages as a
+// fake jniLib (see server-dex/build.gradle and manager/build.gradle).
+include ":server-dex"
 
 def root = "api"
 

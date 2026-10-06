@@ -44,7 +44,8 @@
 #define ABI "arm64"
 #endif
 
-static void run_server(const char *dex_path, const char *main_class, const char *process_name) {
+static void run_server(const char *dex_path, const char *lib_path_override, const char *manager_package,
+                       const char *main_class, const char *process_name) {
     if (setenv("CLASSPATH", dex_path, true)) {
         LOGE("can't set CLASSPATH\n");
         exit(EXIT_FATAL_SET_CLASSPATH);
@@ -92,12 +93,25 @@ v_current = (uintptr_t) v + v_size - sizeof(char *); \
 #endif
 
     char lib_path[PATH_MAX]{0};
-    snprintf(lib_path, PATH_MAX, "%s/lib/%s", dirname(dex_path), ABI);
+    if (lib_path_override != nullptr && lib_path_override[0] != '\0') {
+        // The server dex ships as a jniLib, so it sits in the host's nativeLibraryDir
+        // right next to librish.so / libadb.so - there is no lib/<abi> subdirectory.
+        snprintf(lib_path, PATH_MAX, "%s", lib_path_override);
+    } else {
+        snprintf(lib_path, PATH_MAX, "%s/lib/%s", dirname(dex_path), ABI);
+    }
 
     ARG(argv)
     ARG_PUSH(argv, "/system/bin/app_process")
     ARG_PUSH_FMT(argv, "-Djava.class.path=%s", dex_path)
     ARG_PUSH_FMT(argv, "-Dshizuku.library.path=%s", lib_path)
+    if (manager_package != nullptr && manager_package[0] != '\0') {
+        // The server normally derives the manager package name from the CLASSPATH's parent
+        // directory. A server dex is not placed in an app-specific directory, so pass it
+        // explicitly (ShizukuService reads this property first, the old parsing stays as
+        // a fallback). For a standalone Shizuku app this is simply its own package name.
+        ARG_PUSH_FMT(argv, "-Dshizuku.manager.package=%s", manager_package)
+    }
     ARG_PUSH_DEBUG_VM_PARAMS(argv)
     ARG_PUSH(argv, "/system/bin")
     ARG_PUSH_FMT(argv, "--nice-name=%s", process_name)
@@ -112,7 +126,8 @@ v_current = (uintptr_t) v + v_size - sizeof(char *); \
     }
 }
 
-static void start_server(const char *path, const char *main_class, const char *process_name) {
+static void start_server(const char *path, const char *lib_path, const char *manager_package,
+                         const char *main_class, const char *process_name) {
     int fds[2];
     if (pipe(fds) < 0) {
         perrorf("fatal: can't create pipe\n");
@@ -142,7 +157,7 @@ static void start_server(const char *path, const char *main_class, const char *p
             write(fds[1], &ready, 1);
             close(fds[1]);
 
-            run_server(path, main_class, process_name);
+            run_server(path, lib_path, manager_package, main_class, process_name);
         }
         default: {
             close(fds[1]);
@@ -199,9 +214,15 @@ static int switch_cgroup() {
 
 int main(int argc, char *argv[]) {
     std::string apk_path;
+    std::string server_dex_path;
+    std::string manager_package;
     for (int i = 0; i < argc; ++i) {
         if (strncmp(argv[i], "--apk=", 6) == 0) {
             apk_path = argv[i] + 6;
+        } else if (strncmp(argv[i], "--server-dex=", 13) == 0) {
+            server_dex_path = argv[i] + 13;
+        } else if (strncmp(argv[i], "--manager=", 10) == 0) {
+            manager_package = argv[i] + 10;
         }
     }
 
@@ -299,8 +320,64 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FATAL_PM_PATH);
     }
 
+    // ---- pick the CLASSPATH carrier for the server -------------------------
+    //
+    // Preferred: a stand-alone server dex shipped as a fake jniLib
+    // (nativeLibraryDir/libshizuku_server.so). Unlike the host APK it is a plain dex, so
+    // it survives 加固/加壳 - a packer replaces the APK's dex with a stub, which is exactly
+    // what used to make the embedded server impossible to start.
+    //
+    // Fallback: the host APK (--apk), i.e. the historical behaviour.
+    std::string server_path = apk_path;
+    bool from_native_lib = false;
+
+    if (!server_dex_path.empty()) {
+        if (access(server_dex_path.c_str(), R_OK) == 0) {
+            server_path = server_dex_path;
+            from_native_lib = true;
+        } else {
+            printf("warn: --server-dex %s is not readable, falling back to the apk\n",
+                   server_dex_path.c_str());
+        }
+    } else {
+        // Auto-detect: this very executable lives in the host's nativeLibraryDir, so the
+        // dex is its sibling. Keeps the standalone Shizuku app working without anyone
+        // having to pass --server-dex.
+        char exe_buf[PATH_MAX];
+        ssize_t exe_len = readlink("/proc/self/exe", exe_buf, sizeof(exe_buf) - 1);
+        if (exe_len > 0) {
+            exe_buf[exe_len] = '\0';
+            std::string exe(exe_buf);
+            size_t slash = exe.find_last_of('/');
+            if (slash != std::string::npos) {
+                std::string candidate = exe.substr(0, slash + 1) + "libshizuku_server.so";
+                if (access(candidate.c_str(), R_OK) == 0) {
+                    server_path = candidate;
+                    from_native_lib = true;
+                }
+            }
+        }
+    }
+
+    // Native libs (librish.so / libadb.so) sit in nativeLibraryDir - i.e. next to a server
+    // dex placed there, not under a lib/<abi> subdirectory.
+    char lib_dir[PATH_MAX]{0};
+    const char *lib_path_override = nullptr;
+    if (from_native_lib) {
+        size_t slash = server_path.find_last_of('/');
+        if (slash != std::string::npos) {
+            snprintf(lib_dir, PATH_MAX, "%s", server_path.substr(0, slash).c_str());
+            lib_path_override = lib_dir;
+        }
+    }
+
+    printf("info: server dex is %s (from native lib: %s)\n",
+           server_path.c_str(), from_native_lib ? "yes" : "no");
+    fflush(stdout);
+
     printf("info: starting server...\n");
     fflush(stdout);
     LOGD("start_server");
-    start_server(apk_path.c_str(), SERVER_CLASS_PATH, SERVER_NAME);
+    start_server(server_path.c_str(), lib_path_override, manager_package.c_str(),
+                 SERVER_CLASS_PATH, SERVER_NAME);
 }

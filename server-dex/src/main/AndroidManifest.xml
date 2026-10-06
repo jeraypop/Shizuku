@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Build-time container only: this APK is never installed on a device. Its only
+         purpose is to make AGP produce a dex bundle carrying the whole Shizuku server
+         runtime, which :manager repackages as a fake jniLib. -->
+    <application android:hasCode="true" />
+</manifest>

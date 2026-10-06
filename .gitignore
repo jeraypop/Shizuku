@@ -12,6 +12,8 @@ build/
 /manager/signing.properties
 /out
 /signing.properties
+# Android Studio's "Generate Signed APK" wizard drops its exported APK here.
+/app/release/
 /.kotlin
 *.log
 .workbuddy/

@@ -30,6 +30,10 @@ android {
     packagingOptions {
         jniLibs {
             useLegacyPackaging = true
+            // libshizuku_server.so is a zip holding classes.dex (a stand-alone copy of the
+            // server runtime), not an ELF object. Skip the NDK strip step so the build log
+            // stays clean - the file is packaged as-is either way.
+            keepDebugSymbols += "**/libshizuku_server.so"
         }
         resources {
             excludes += ["**"]

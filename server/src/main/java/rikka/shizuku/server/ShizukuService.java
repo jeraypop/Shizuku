@@ -65,26 +65,37 @@ public class ShizukuService extends Service<ShizukuUserServiceManager, ShizukuCl
     public static final String MANAGER_APPLICATION_ID;
 
     static {
-        String packageName = null;
-        try {
-            String apk = System.getenv("CLASSPATH");
+        // The starter passes the manager package name explicitly whenever the server is
+        // loaded from a stand-alone dex (shipped as a fake jniLib) rather than from the host
+        // APK. Such a dex does not live in an app-specific directory, so the historical
+        // "derive the package from the CLASSPATH's parent dir" trick below cannot work for
+        // it - but that trick is precisely what used to work when the server was loaded
+        // straight out of the host APK, so it stays as the fallback.
+        String packageName = System.getProperty("shizuku.manager.package");
+        if (packageName != null && !packageName.isEmpty()) {
+            LOGGER.i("Manager package name from shizuku.manager.package: " + packageName);
+        } else {
+            packageName = null;
+            try {
+                String apk = System.getenv("CLASSPATH");
 
-            int lastSlash = apk.lastIndexOf(File.separatorChar);
-            String parentDir = apk.substring(0, lastSlash);
+                int lastSlash = apk.lastIndexOf(File.separatorChar);
+                String parentDir = apk.substring(0, lastSlash);
 
-            int secondLastSlash = parentDir.lastIndexOf(File.separatorChar);
-            String dirName = parentDir.substring(secondLastSlash + 1);
+                int secondLastSlash = parentDir.lastIndexOf(File.separatorChar);
+                String dirName = parentDir.substring(secondLastSlash + 1);
 
-            int dash = dirName.indexOf('-');
-            if (dash > 0) {
-                packageName = dirName.substring(0, dash);
-            } else {
-                packageName = dirName;
+                int dash = dirName.indexOf('-');
+                if (dash > 0) {
+                    packageName = dirName.substring(0, dash);
+                } else {
+                    packageName = dirName;
+                }
+
+                LOGGER.i("Manager package name is " + packageName);
+            } catch (Throwable tr) {
+                LOGGER.w("Couldn't get manager package name from CLASSPATH", tr);
             }
-
-            LOGGER.i("Manager package name is " + packageName);
-        } catch (Throwable tr) {
-            LOGGER.w("Couldn't get manager package name from CLASSPATH", tr);
         }
         MANAGER_APPLICATION_ID = packageName;
     }

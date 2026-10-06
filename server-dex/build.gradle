@@ -1,0 +1,121 @@
+import com.android.build.api.artifact.SingleArtifact
+
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+// Build-time container only - never installed on a device.
+//
+// Its sole job is to make AGP produce a stand-alone dex bundle that carries the whole
+// Shizuku server runtime (rikka.shizuku.server.ShizukuService plus everything it needs).
+// :manager then repackages that dex as a fake jniLib, so the server can be launched from
+// a plain dex instead of the host APK.
+//
+// Why: starter.cpp hands app_process a CLASSPATH pointing at the host APK. A 加固/加壳
+// packer replaces that APK's dex with a stub, so the server class can no longer be loaded
+// and the server process never comes up. A dex shipped as a jniLib is not touched by the
+// packer, so this is the only way to keep the manager embedded (no separate Shizuku app)
+// while remaining usable on a hardened host.
+//
+// Deliberately NOT minified: this dex is handed straight to app_process, and shrinking
+// would silently drop classes that are only reached through reflection / ServiceManager.
+android {
+    namespace = "moe.shizuku.server.dex"
+    defaultConfig {
+        applicationId = "moe.shizuku.server.dex"
+        versionCode = rootProject.ext.versionCode
+        versionName = rootProject.ext.versionName
+    }
+    buildTypes {
+        debug {
+        }
+        release {
+            minifyEnabled = false
+        }
+    }
+    lint {
+        checkReleaseBuilds = false
+    }
+    packagingOptions {
+        resources {
+            excludes += ["**"]
+        }
+    }
+    dependenciesInfo {
+        includeInApk = false
+    }
+}
+
+dependencies {
+    implementation project(":server")
+    // :server declares :provider as compileOnly - fine while the server lives inside the
+    // host APK (which already carries the provider). A stand-alone dex must carry it itself.
+    implementation project(":provider")
+    // :server references kotlin.collections.ArraysKt; make sure the stdlib gets bundled.
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}"
+}
+
+// ---------------------------------------------------------------------------
+// Stand-alone dex -> fake jniLib for :manager
+//
+// The server used to be loaded straight out of the host APK (app_process with
+// CLASSPATH=<host apk>). A 加固/加壳 packer replaces that APK's dex with a stub, which
+// makes rikka.shizuku.server.ShizukuService unloadable and the embedded manager silently
+// stop working. So the server runtime is shipped as a plain dex disguised as a native
+// library: packers leave jniLibs alone, and app_process loads a zip (whatever its file
+// extension) fine as its classpath.
+//
+// Reading the APK through the AGP artifact provider - instead of a hard-coded
+// build/outputs/apk/... path - keeps this working when the IDE's "Generate Signed APK"
+// wizard redirects APK output via android.injected.apk.location. Same pattern as the
+// rish dex extraction in :shell.
+// ---------------------------------------------------------------------------
+def serverJniLibDir = layout.buildDirectory.dir("shizukuServerJniLibs").get().asFile
+def serverAbis = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"]
+
+androidComponents {
+    // release only: :manager bundles one dex for both of its variants, so a second writer
+    // for the same directory would just fight over it.
+    onVariants(selector().withName("release")) { variant ->
+        def variantName = variant.name
+        def apkDir = variant.artifacts.get(SingleArtifact.APK.INSTANCE)
+
+        tasks.matching { it.name == "assemble${variantName.capitalize()}" }.configureEach {
+            outputs.dir(serverJniLibDir)
+            doLast {
+                def apk = fileTree(apkDir.get().asFile).matching { include "*.apk" }.singleFile
+
+                // Pull every classes*.dex out of the APK (the bundle may be multi-dex).
+                def dexEntries = [:]
+                new java.util.zip.ZipFile(apk).withCloseable { zf ->
+                    zf.entries().each { e ->
+                        if (e.name ==~ /classes\d*\.dex/) {
+                            dexEntries[e.name] = zf.getInputStream(e).bytes
+                        }
+                    }
+                }
+                if (dexEntries.isEmpty()) {
+                    throw new GradleException("no classes*.dex inside ${apk.name}")
+                }
+
+                serverJniLibDir.deleteDir()
+                serverAbis.each { abi ->
+                    def dir = new File(serverJniLibDir, abi)
+                    dir.mkdirs()
+                    // Keep the dex as separate zip entries (classes.dex, classes2.dex, ...) so
+                    // ART can load them all. Low compression on purpose: the dex is already
+                    // compact and deflating a multi-MB blob on every build is pure waste.
+                    new java.util.zip.ZipOutputStream(new File(dir, "libshizuku_server.so").newOutputStream()).withCloseable { zos ->
+                        zos.setLevel(java.util.zip.Deflater.BEST_SPEED)
+                        dexEntries.each { name, bytes ->
+                            zos.putNextEntry(new java.util.zip.ZipEntry(name))
+                            zos.write(bytes)
+                            zos.closeEntry()
+                        }
+                    }
+                }
+                logger.lifecycle("server-dex: wrote libshizuku_server.so (${dexEntries.keySet().join(', ')}) for ${serverAbis.size()} ABIs")
+            }
+        }
+    }
+}

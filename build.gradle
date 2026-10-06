@@ -31,6 +31,24 @@ subprojects { subproject ->
     }
 }
 
+// Android Studio's "Generate Signed APK" wizard runs the build with
+// -Pandroid.injected.apk.location=<dir>, and AGP applies that directory to *every*
+// application module in the build. :manager drags :shell and :server-dex into the same
+// graph, so all three would write output-metadata.json into the one folder and Gradle
+// rejects the build ("uses this output of task ... without declaring an explicit or
+// implicit dependency"). Those listing files only exist for the IDE to locate build
+// output; the APKs themselves are unaffected. While the wizard is driving, skip the
+// redirect tasks - they are the only consumers of that shared file.
+if (project.hasProperty("android.injected.apk.location")) {
+    subprojects { subproject ->
+        subproject.tasks.matching {
+            it.name.startsWith("create") && it.name.endsWith("ApkListingFileRedirect")
+        }.configureEach {
+            enabled = false
+        }
+    }
+}
+
 def gitCommitCount = Integer.parseInt("git rev-list --count HEAD".execute([], project.rootDir).text.trim())
 def baseVersionName = "13.7.0"
 def isBeta = project.hasProperty("beta")

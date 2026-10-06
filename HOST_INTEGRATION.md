@@ -12,7 +12,7 @@
 | compileSdk | **37** | 库以 compileSdk 37（AGP 9.2.1）构建，宿主低于 37 可能解析不了库资源 |
 | AGP / Gradle | 建议 AGP 9.x + Gradle 9.x（即 JDK 21） | 库产物由 AGP 9.2.1 产出 |
 | Gradle JDK | 21 | 库字节码 jvmTarget = 21 |
-| 宿主包名 | **不能含 `-`** | server 从 `/data/app/<包名>-<hash>/` 按 `-` 切分解析包名 |
+| 宿主包名 | 建议不含 `-` | 正常情况下 server 从随库分发的独立 dex 加载、包名由 starter 显式传入，不受影响；仅当该 dex 缺失而回退到「从宿主 APK 加载」时才按 `-` 切分解析包名 |
 | 仓库 | `mavenCentral()` + `maven { url 'https://jitpack.io' }`（未发布时改用 `mavenLocal()`） | jitpack 拿本库 + libsu |
 | 设备 | 已卸载独立 Shizuku App，或签名与之相同 | `API_V23` 权限同名冲突，见第 5 节第 4 条 |
 
@@ -32,8 +32,17 @@ android {
 
     packagingOptions {
         jniLibs {
-            // libshizuku.so（starter）必须解压到磁盘，server 以 app_process 加载它
+            // ★ 必须保留：starter（libshizuku.so）和 server 的启动载体
+            //   （libshizuku_server.so，实为一个装着 server dex 的 zip）都必须以
+            //   独立文件解压到 nativeLibraryDir，app_process / shell 才读得到。
+            //   若宿主关掉 jniLibs 解压（extractNativeLibs=false），两者都读不到，
+            //   server 永远起不来。
             useLegacyPackaging = true
+
+            // 可选但建议：libshizuku_server.so 实为一个装着 dex 的 zip，不是 ELF 目标文件。
+            // 不声明这一条，NDK strip 会对每个 ABI 各刷一条
+            // "file was not recognized as a valid object file"（仅噪音，最终照原样打包）。
+            keepDebugSymbols += "**/libshizuku_server.so"
         }
     }
 
@@ -69,7 +78,11 @@ android {
         manifestPlaceholders["shizukuApplicationId"] = applicationId.toString()
     }
     packaging {
-        jniLibs { useLegacyPackaging = true }
+        jniLibs {
+            useLegacyPackaging = true
+            // 同上：libshizuku_server.so 是装着 dex 的 zip，声明这一条可免掉 NDK strip 的噪音
+            keepDebugSymbols += "**/libshizuku_server.so"
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -172,13 +185,14 @@ if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
 
 ## 5. 硬性约束与已知坑（务必通读）
 
-1. **包名不能含 `-`** —— server 启动时从 CLASSPATH 目录名解析宿主包名，含 `-` 会导致解析失败。
+1. **包名建议不含 `-`** —— 正常路径下 server 是从随库分发的 `libshizuku_server.so` 加载的，包名由 starter 用 `-Dshizuku.manager.package` 显式传给 server，不再经过目录名解析；只有当该 dex 缺失（例如宿主按 ABI 裁掉了 jniLibs）而回退到「从宿主 APK 加载」时，才会走「按 `-` 切分目录名」的老逻辑。
 2. **⛔ 宿主不许引入任何 `dev.rikka.shizuku:*` 官方 artifact（api/provider/aidl/shared）** —— fork 与官方类同名同命名空间，两套共存 = namespace 冲突 + 35 个 duplicate class；单独排 fork 侧更糟：server 会因缺 `moe.shizuku.common.*`/`aidl` 类在启动瞬间死掉，表现为「starter 正常、server pid 有值、进程随即消失、永远收不到 binder」。宿主工程里所有模块（含自己的库）都不要出现 `dev.rikka.shizuku`，全局搜一遍。
 3. **不要 remove `InitializationProvider`** —— 见第 2 节。
 4. **R8 missing classes** —— 开混淆必须加 `compileOnly "dev.rikka.hidden:stub:4.4.0"`（库的 consumer-rules.pro 已自动带入 keep 规则：server/starter/shell 的 main 入口、Parcelable CREATOR、native 方法等）。
 5. **与独立 Shizuku App 无法共存（签名不同时）** —— `moe.shizuku.manager.permission.API_V23` 是公共 API 固定名，全设备只能声明一次；宿主与独立 App 签名不同时，装第二个会被 `INSTALL_FAILED_DUPLICATE_PERMISSION` 拒绝。要共存必须统一 keystore。
 6. **Android Studio Run 安装失败 `INSTALL_FAILED_TEST_ONLY`** —— Studio 会给 Run 产物注入 `android:testOnly`；根治：gradle.properties 加 `android.injected.testOnly=false`（本仓库已加，宿主项目建议也加）。
 7. **权限组已按包名参数化** —— permission-group 为 `<宿主包名>.permission-group.API`，多 App 各自独立，互不抢占。
+8. **server 从独立的 `libshizuku_server.so` 启动，不再从宿主 APK 读类** —— 这是为了让**加固（加壳）后的宿主**也能用内置管理器：加固会把 `classes.dex` 换成壳，若 server 仍从宿主 APK 加载，`app_process` 就找不到 `rikka.shizuku.server.ShizukuService`，表现为「starter 正常退出、server 进程一闪即逝、永远收不到 binder」。这份 dex 由 `:server-dex` 模块构建期产出、`:manager` 打成 zip 伪装成 jniLib（加固不动 jniLibs，见第 5 节第 1 条的 `useLegacyPackaging`）。⚠️ **若宿主对 jniLibs 做了 ABI 裁剪或白名单，务必保留 `libshizuku_server.so`**，否则会自动回退成旧行为。
 
 ---
 
@@ -188,7 +202,7 @@ if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
 安装宿主 App（唯一入口）
   → 宿主内打开 Shizuku 主页
   → 无线调试配对（或 root）启动 server
-  → server 以 shell 权限从宿主 APK 拉起（app_process 加载宿主 APK 内的类）
+  → server 以 shell 权限启动（app_process 加载随库分发的独立 server dex；宿主加固后同样可用）
   → 第三方 App 请求权限 → 弹宿主内的授权框
   → 授权后第三方通过 server 推送的 binder 使用特权能力
 ```
@@ -205,5 +219,7 @@ if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
 | 运行时 Shizuku 永远未初始化 | 检查宿主是否 remove 了 InitializationProvider |
 | `INSTALL_FAILED_DUPLICATE_PERMISSION` | 与独立 App 签名不同，卸载另一方或统一 keystore |
 | `-126 redeclare permission group` | 老版本库的固定组名，更新到参数化版本 |
-| server 启动后立即退出、日志找不到包名 | 宿主包名含 `-`，改包名 |
+| server 启动后立即退出、日志找不到包名 | 已回退到「从宿主 APK 加载」且宿主包名含 `-`；检查 `libshizuku_server.so` 是否被 jniLibs 裁剪掉 |
+| 加固（加壳）后显示「服务未运行」，但 starter 自己跑得通 | 确认依赖的 AAR 里有 `jni/*/libshizuku_server.so`（独立 server dex）。旧版从宿主 APK 读类，加固后必失败 |
+| 加固包 / release 包一打开就秒退，`NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init> []` | R8 full mode 删掉了 Room 生成类的无参构造器（`work-runtime` 传递的 `room-runtime 2.6.1` 的 keep 规则只保类名、不保构造器）。库的 `consumer-rules.pro` 已带该修复；仅当宿主自行剔除了 consumer rules 时才需要自己加 `-keep class * extends androidx.room.RoomDatabase { void <init>(); }` |
 | Studio 装机报 `INSTALL_BASELINE_PROFILE_FAILED` | 实为前一步 testOnly 静默失败，加 `android.injected.testOnly=false` |

@@ -121,3 +121,26 @@
 -dontwarn com.android.org.conscrypt.Conscrypt**
 -dontwarn dalvik.system.VMRuntime**
 -dontwarn stub.dalvik.system.VMRuntimeHidden**
+
+# ---------------------------------------------------------------------------
+# Room / WorkManager: keep the generated RoomDatabase implementations' no-arg
+# constructor.
+#
+# androidx.work:work-runtime:2.10.4 still pulls in androidx.room:room-runtime:2.6.1,
+# whose bundled proguard.txt only contains
+#     -keep class * extends androidx.room.RoomDatabase
+# i.e. it keeps the generated `*_Impl` class name but NOT its constructor. Room
+# instantiates that class purely by reflection
+# (RoomDatabase.getGeneratedImplementation -> Class.getDeclaredConstructor()), which
+# R8 cannot see, so R8 full mode (the default since AGP 8) strips `<init>()`.
+#
+# Result at runtime, before any activity is shown:
+#     Unable to get provider androidx.startup.InitializationProvider:
+#       NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init> []
+# because WorkManagerInitializer runs from androidx.startup and builds WorkDatabase
+# during Application startup -> the app dies instantly.
+#
+# Room 2.7.0+ ships this exact rule itself; add it here so hosts depending on this
+# library are protected regardless of the Room version resolved transitively.
+# ---------------------------------------------------------------------------
+-keep class * extends androidx.room.RoomDatabase { void <init>(); }
