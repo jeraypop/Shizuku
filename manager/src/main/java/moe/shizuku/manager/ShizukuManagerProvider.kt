@@ -3,12 +3,9 @@ package moe.shizuku.manager
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import kotlinx.coroutines.android.asCoroutineDispatcher
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
 import moe.shizuku.api.BinderContainer
 import moe.shizuku.manager.utils.Logger.LOGGER
 import moe.shizuku.manager.utils.ShizukuStateMachine
@@ -40,24 +37,29 @@ class ShizukuManagerProvider : ShizukuProvider() {
                 val binder = extras.getParcelable<BinderContainer>(EXTRA_BINDER)?.binder ?: return null
 
                 return runBlocking {
-                    try {
-                        withTimeout(5000) {
-                            ShizukuStateMachine.asFlow().first { it == ShizukuStateMachine.State.RUNNING }
-                            withContext(workerHandler.asCoroutineDispatcher()) {
-                                try {
-                                    val reply = Bundle()
-                                    Shizuku.attachUserService(binder, bundleOf(USER_SERVICE_ARG_TOKEN to token))
-                                    reply!!.putParcelable(EXTRA_BINDER, BinderContainer(Shizuku.getBinder()))
-                                    reply
-                                } catch (e: Throwable) {
-                                    LOGGER.e(e, "attachUserService $token")
-                                    null
-                                }
-                            }
+                    // This is a synchronous ContentProvider#call() invoked from the server's own
+                    // binder thread when a user service starts. Waiting for State.RUNNING used to be
+                    // a dead end: that state is only emitted from a listener Shizuku dispatches on
+                    // the main thread, so the wait could only ever end when the main thread was free
+                    // — and right after the first pairing the main thread is busy starting the
+                    // server (or blocked by RequestPermissionActivity), which made every user
+                    // service attach fail with "Binder not received in 5s".
+                    // awaitBinder() polls Shizuku.pingBinder() and never depends on main-thread
+                    // delivery.
+                    if (!ShizukuStateMachine.awaitBinder(5000)) {
+                        LOGGER.e("Binder not received in 5s")
+                        return@runBlocking null
+                    }
+                    withContext(workerHandler.asCoroutineDispatcher()) {
+                        try {
+                            val reply = Bundle()
+                            Shizuku.attachUserService(binder, bundleOf(USER_SERVICE_ARG_TOKEN to token))
+                            reply!!.putParcelable(EXTRA_BINDER, BinderContainer(Shizuku.getBinder()))
+                            reply
+                        } catch (e: Throwable) {
+                            LOGGER.e(e, "attachUserService $token")
+                            null
                         }
-                    } catch (e: TimeoutCancellationException) {
-                        LOGGER.e(e, "Binder not received in 5s")
-                        null
                     }
                 }
             } catch (e: Throwable) {

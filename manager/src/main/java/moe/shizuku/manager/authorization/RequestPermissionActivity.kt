@@ -7,11 +7,9 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
 import moe.shizuku.manager.Helps
 import moe.shizuku.manager.R
 import moe.shizuku.manager.app.AppActivity
@@ -64,27 +62,8 @@ class RequestPermissionActivity : AppActivity() {
         return false
     }
 
-    private fun waitForBinder(): Boolean {
-        return runBlocking {
-            try { 
-                withTimeout(5000) {
-                    ShizukuStateMachine.asFlow().first { it == ShizukuStateMachine.State.RUNNING }
-                }
-                true
-            } catch (e: TimeoutCancellationException) {
-                LOGGER.e(e, "Binder not received in 5s")
-                false
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if (!waitForBinder()) {
-            finish()
-            return
-        }
 
         val uid = intent.getIntExtra("uid", -1)
         val pid = intent.getIntExtra("pid", -1)
@@ -94,6 +73,24 @@ class RequestPermissionActivity : AppActivity() {
             finish()
             return
         }
+
+        // The binder is handed over by a listener that Shizuku dispatches on the MAIN thread, so
+        // waiting for it here must never block the main thread: doing so deadlocks (the very event
+        // being waited for can only be delivered by the blocked thread) and ANRs whatever activity
+        // is in front. This is triggered for real right after the first wireless pairing — the
+        // server starts and immediately asks this app for a runtime permission, while StarterActivity
+        // is still on screen waiting for focus.
+        lifecycleScope.launch {
+            if (!ShizukuStateMachine.awaitBinder(5000)) {
+                LOGGER.e("Binder not received in 5s")
+                finish()
+                return@launch
+            }
+            showPermissionDialog(uid, pid, requestCode, ai)
+        }
+    }
+
+    private fun showPermissionDialog(uid: Int, pid: Int, requestCode: Int, ai: ApplicationInfo) {
         if (!checkSelfPermission()) {
             setResult(uid, pid, requestCode, allowed = false, onetime = true)
             return

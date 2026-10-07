@@ -7,8 +7,10 @@ import android.util.Log
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.withTimeoutOrNull
 import moe.shizuku.manager.ShizukuApplication
 import moe.shizuku.manager.ShizukuSettings
 import rikka.shizuku.Shizuku
@@ -91,5 +93,31 @@ object ShizukuStateMachine {
         addListener(listener)
         awaitClose { removeListener(listener) }
     }
+
+    /**
+     * Wait until the Shizuku binder is usable.
+     *
+     * Do NOT use [asFlow] for this. State.RUNNING is only reported by a listener that
+     * rikka.shizuku.Shizuku dispatches on the main thread (Shizuku#scheduleBinderReceivedListeners
+     * posts to MAIN_HANDLER when it is called from a non-main thread), so *blocking* a thread
+     * while waiting for it deadlocks when that thread is the main thread — which happened for
+     * real: right after the first wireless pairing the server starts and immediately asks this
+     * app for a runtime permission, RequestPermissionActivity.onCreate blocked the main thread
+     * for 5s on that event, and the visible StarterActivity was ANR'ed ("Input dispatching
+     * timed out ... Waited 5000ms for FocusEvent").
+     *
+     * Shizuku.pingBinder() reads the very same binder state synchronously — rikka.shizuku.Shizuku
+     * assigns its binder field in onBinderReceived() before the listeners are scheduled — so poll
+     * it instead. It never touches the main thread and returns as soon as the binder really exists.
+     *
+     * @return true if the binder became available within [timeoutMillis].
+     */
+    suspend fun awaitBinder(timeoutMillis: Long): Boolean =
+        withTimeoutOrNull(timeoutMillis) {
+            while (!Shizuku.pingBinder()) {
+                delay(50)
+            }
+            true
+        } ?: false
 
 }
